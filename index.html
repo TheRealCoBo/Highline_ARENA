@@ -385,9 +385,7 @@ const DEFAULT_CATS = [
 ];
 
 // ── Baked State (overwritten by Harden & Deploy) ─────────────────────────────
-// BAKED_STATE_START
-const BAKED_STATE = null;
-// BAKED_STATE_END
+const BAKED_STATE = null; /*BAKED_STATE_MARKER*/
 
 // ── State ─────────────────────────────────────────────────────────────────────
 // Permanent key — never bump this. Add new fields with "if(!p.x) p.x = default" below.
@@ -1429,11 +1427,11 @@ async function deployToGitHub(){
     const bytes = Uint8Array.from(atob(fileData.content.replace(/\n/g,'')), c=>c.charCodeAt(0));
     const currentContent = new TextDecoder('utf-8').decode(bytes);
 
-    // Replace BAKED_STATE block with current state
+    // Replace BAKED_STATE line with current state
     const stateJson = JSON.stringify(S);
     const newContent = currentContent.replace(
-      /\/\/ BAKED_STATE_START[\s\S]*?\/\/ BAKED_STATE_END/,
-      `// BAKED_STATE_START\nconst BAKED_STATE = ${stateJson};\n// BAKED_STATE_END`
+      /const BAKED_STATE = .*?; \/\*BAKED_STATE_MARKER\*\//,
+      `const BAKED_STATE = ${stateJson}; /*BAKED_STATE_MARKER*/`
     );
     if(newContent === currentContent) throw new Error('BAKED_STATE marker not found — upload the base HTML to GitHub first.');
 
