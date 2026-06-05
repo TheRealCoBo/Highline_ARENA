@@ -393,9 +393,9 @@ let S = (() => {
       if(!raw) continue;
       const p = JSON.parse(raw);
       // Additive migrations — new fields only, never overwrite existing data
-      if(!p.config)     p.config     = {name:'Highline: Arena 26',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'};
+      if(!p.config)     p.config     = {name:'THE ARENA',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'};
       if(!p.reps)       p.reps       = JSON.parse(JSON.stringify(SEED_REPS));
-      if(!p.categories) p.categories = JSON.parse(JSON.stringify(DEFAULT_CATS));
+      if(!p.categories) p.categories = JSON.parse(JSON.stringify(SEED_COMPETITION_CATS));
       if(!p.events)          p.events          = [];
       if(!p.teams)           p.teams           = [];
       if(!p.processedWeeks)  p.processedWeeks  = [];
@@ -411,9 +411,9 @@ let S = (() => {
     } catch(e){}
   }
   return {
-    config:{name:'Highline: Arena 26',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'},
+    config:{name:'THE ARENA',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'},
     reps:JSON.parse(JSON.stringify(SEED_REPS)),
-    categories:[...JSON.parse(JSON.stringify(DEFAULT_CATS)), ...JSON.parse(JSON.stringify(SEED_COMPETITION_CATS))],
+    categories:JSON.parse(JSON.stringify(SEED_COMPETITION_CATS)),
     events:[], teams:JSON.parse(JSON.stringify(SEED_TEAMS)), processedWeeks:[]
   };
 })();
