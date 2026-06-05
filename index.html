@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Highline: Arena 26</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -381,6 +384,11 @@ const DEFAULT_CATS = [
   {id:'cat_k7',name:'kWh Bonus: 100k+',desc:'kWh bonus tier',points:350,type:'individual'},
 ];
 
+// ── Baked State (overwritten by Harden & Deploy) ─────────────────────────────
+// BAKED_STATE_START
+const BAKED_STATE = null;
+// BAKED_STATE_END
+
 // ── State ─────────────────────────────────────────────────────────────────────
 // Permanent key — never bump this. Add new fields with "if(!p.x) p.x = default" below.
 const SK = 'arena26';
@@ -410,6 +418,7 @@ let S = (() => {
       return p;
     } catch(e){}
   }
+  if(BAKED_STATE) return JSON.parse(JSON.stringify(BAKED_STATE));
   return {
     config:{name:'THE ARENA',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'},
     reps:JSON.parse(JSON.stringify(SEED_REPS)),
@@ -1343,6 +1352,22 @@ function renderSettings(){
     </div>
   </div>
 
+  <div class="card" style="max-width:600px">
+    <div class="card-header"><h3>🚀 Harden &amp; Deploy</h3></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:14px">Bakes your current local state into the GitHub source file. Anyone who opens the app fresh will start with this exact configuration — no import needed. Requires a GitHub Personal Access Token with <strong style="color:var(--text)">repo</strong> scope.</p>
+      <div class="form-row"><div>
+        <label>GitHub Personal Access Token</label>
+        <input type="password" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxx" value="${esc(localStorage.getItem('gh_deploy_token')||'')}">
+      </div></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn" onclick="saveGHToken()">Save Token</button>
+        <button class="btn primary" onclick="deployToGitHub()" id="deployBtn">🚀 Harden &amp; Push to GitHub</button>
+      </div>
+      <div id="deployStatus" style="margin-top:10px;font-size:12px;color:var(--dim)"></div>
+    </div>
+  </div>
+
   <div class="card" style="max-width:720px">
     <div class="card-header">
       <h3>🏆 Teams</h3>
@@ -1371,6 +1396,66 @@ function renderSettings(){
       </table></div>
     </div>
   </div>`;
+}
+
+function saveGHToken(){
+  const t = (document.getElementById('ghTokenInput').value||'').trim();
+  if(!t){ toast('Enter a token first','red'); return; }
+  localStorage.setItem('gh_deploy_token', t);
+  toast('Token saved','green');
+}
+
+async function deployToGitHub(){
+  const token = localStorage.getItem('gh_deploy_token') || (document.getElementById('ghTokenInput').value||'').trim();
+  if(!token){ toast('Enter a GitHub PAT first','red'); return; }
+
+  const repo = 'TheRealCoBo/Highline_ARENA';
+  const path = 'index.html';
+  const statusEl = document.getElementById('deployStatus');
+  const btn = document.getElementById('deployBtn');
+  const setStatus = (msg, color='var(--dim)') => { if(statusEl){ statusEl.textContent = msg; statusEl.style.color = color; } };
+
+  btn.disabled = true;
+  setStatus('Fetching current file from GitHub…');
+
+  try {
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+    });
+    if(!getRes.ok){ const e=await getRes.json(); throw new Error(e.message||`HTTP ${getRes.status}`); }
+    const fileData = await getRes.json();
+
+    // Decode UTF-8 from base64
+    const bytes = Uint8Array.from(atob(fileData.content.replace(/\n/g,'')), c=>c.charCodeAt(0));
+    const currentContent = new TextDecoder('utf-8').decode(bytes);
+
+    // Replace BAKED_STATE block with current state
+    const stateJson = JSON.stringify(S);
+    const newContent = currentContent.replace(
+      /\/\/ BAKED_STATE_START[\s\S]*?\/\/ BAKED_STATE_END/,
+      `// BAKED_STATE_START\nconst BAKED_STATE = ${stateJson};\n// BAKED_STATE_END`
+    );
+    if(newContent === currentContent) throw new Error('BAKED_STATE marker not found — upload the base HTML to GitHub first.');
+
+    setStatus('Pushing to GitHub…');
+    const encoded = new TextEncoder().encode(newContent);
+    const binary = Array.from(encoded, b=>String.fromCharCode(b)).join('');
+    const ts = new Date().toISOString().slice(0,16).replace('T',' ');
+    const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+      method:'PUT',
+      headers:{ 'Authorization':`token ${token}`, 'Content-Type':'application/json', 'Accept':'application/vnd.github.v3+json' },
+      body: JSON.stringify({ message:`Harden: ${ts}`, content: btoa(binary), sha: fileData.sha })
+    });
+    if(!putRes.ok){ const e=await putRes.json(); throw new Error(e.message||`HTTP ${putRes.status}`); }
+
+    setStatus('✓ Deployed! GitHub Pages updates in ~30s.', 'var(--green)');
+    toast('Hardened & pushed to GitHub!','green');
+  } catch(e){
+    setStatus('✗ ' + e.message, 'var(--red)');
+    toast('Deploy failed — ' + e.message,'red');
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function openTeamModal(id=null){
