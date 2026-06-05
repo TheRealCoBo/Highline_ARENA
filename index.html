@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Highline: Arena 26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0a0c12;--elev:#12151e;--elev2:#1a1e2a;--border:#252b3a;--accent:#f5a623;--green:#3ecf8e;--red:#f16062;--yellow:#f5c842;--purple:#a78bfa;--gold:#ffd700;--silver:#c0c0c0;--bronze:#cd7f32;--text:#e8eaf0;--dim:#8a8fa8;--r:10px;--fh:'Oswald',sans-serif;--fm:'Inter',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--fm);font-size:14px;min-height:100vh}
+.topbar{background:var(--elev);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;height:58px;gap:16px;position:sticky;top:0;z-index:100}
+.logo{font-family:var(--fh);font-size:24px;font-weight:700;letter-spacing:.06em;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-sub{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.14em;margin-top:-2px}
+.spacer{flex:1}
+.season-badge{font-size:11px;color:var(--accent);background:rgba(245,166,35,.1);padding:4px 14px;border-radius:20px;border:1px solid rgba(245,166,35,.25);font-family:var(--fh);letter-spacing:.06em}
+.btn-award{padding:7px 16px;border-radius:6px;border:none;background:linear-gradient(135deg,var(--gold),var(--accent));color:#000;font-weight:700;font-family:var(--fh);font-size:13px;letter-spacing:.06em;cursor:pointer;transition:opacity .15s}
+.btn-award:hover{opacity:.85}
+.tab-nav{display:flex;background:var(--elev);border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto}
+.tab-btn{padding:12px 20px;border:none;background:none;color:var(--dim);font-family:var(--fh);font-size:14px;font-weight:500;letter-spacing:.06em;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-section{display:none}.tab-section.active{display:block}
+main{padding:24px;max-width:1400px;margin:0 auto}
+.card{background:var(--elev);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.card-header{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.card-header h3{font-family:var(--fh);font-size:14px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;flex:1}
+.card-body{padding:18px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:var(--elev);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center}
+.stat-card .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim);margin-bottom:8px;font-family:var(--fh)}
+.stat-card .val{font-size:28px;font-family:var(--fh);font-weight:700}
+.stat-card .sub{font-size:11px;color:var(--dim);margin-top:4px}
+.stat-card.gold-card{border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.05)}.stat-card.gold-card .val{color:var(--gold)}
+.stat-card.silver-card{border-color:rgba(192,192,192,.3)}.stat-card.silver-card .val{color:var(--silver)}
+.stat-card.bronze-card{border-color:rgba(205,127,50,.3)}.stat-card.bronze-card .val{color:var(--bronze)}
+.stat-card.green-card .val{color:var(--green)}
+.stat-card.accent-card .val{color:var(--accent)}
+.stat-card.purple-card .val{color:var(--purple)}
+.btn{padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:var(--elev2);color:var(--text);cursor:pointer;font-size:13px;font-family:var(--fm);transition:background .15s}
+.btn:hover{background:#252b3a}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700}
+.btn.primary:hover{opacity:.85}
+.btn.danger{background:rgba(241,96,98,.12);border-color:rgba(241,96,98,.4);color:var(--red)}
+.btn.danger:hover{background:rgba(241,96,98,.22)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:2px 8px;font-size:11px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-family:var(--fh);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--elev2)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.rank-1{color:var(--gold);font-weight:700}.rank-2{color:var(--silver);font-weight:600}.rank-3{color:var(--bronze);font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.badge.gold{background:rgba(255,215,0,.15);color:var(--gold)}
+.badge.silver{background:rgba(192,192,192,.15);color:var(--silver)}
+.badge.green{background:rgba(62,207,142,.15);color:var(--green)}
+.badge.red{background:rgba(241,96,98,.15);color:var(--red)}
+.badge.accent{background:rgba(245,166,35,.15);color:var(--accent)}
+.badge.purple{background:rgba(167,139,250,.15);color:var(--purple)}
+.badge.dim{background:rgba(138,143,168,.1);color:var(--dim)}
+.flex{display:flex;align-items:center;gap:8px}
+input,select,textarea{background:var(--elev2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 11px;font-size:13px;font-family:var(--fm);width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+input[type=checkbox]{width:auto;accent-color:var(--accent)}
+.form-row{display:grid;gap:10px;margin-bottom:12px}
+.form-row.c2{grid-template-columns:1fr 1fr}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr}
+label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-family:var(--fh);display:block;margin-bottom:4px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--elev);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:24px}
+.modal h2{font-family:var(--fh);font-size:20px;font-weight:700;letter-spacing:.06em;margin-bottom:18px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--elev2);border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;max-width:340px}
+.list-item{display:flex;align-items:center;gap:8px;background:var(--elev2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:6px}
+.list-item .name{flex:1;font-size:13px}
+.empty-state{text-align:center;padding:32px;color:var(--dim);font-size:13px}
+.empty-state .icon{font-size:32px;margin-bottom:8px}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;padding:24px 0 8px}
+.podium-slot{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:110px}
+.podium-name{font-family:var(--fh);font-size:14px;font-weight:600;text-align:center;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.podium-pts{font-size:11px;color:var(--dim)}
+.podium-block{border-radius:6px 6px 0 0;width:110px;display:flex;align-items:center;justify-content:center;font-size:28px}
+.podium-block.p1{height:110px;background:linear-gradient(180deg,rgba(255,215,0,.2),rgba(255,215,0,.05));border:1px solid rgba(255,215,0,.35);border-bottom:none}
+.podium-block.p2{height:80px;background:linear-gradient(180deg,rgba(192,192,192,.15),rgba(192,192,192,.04));border:1px solid rgba(192,192,192,.3);border-bottom:none}
+.podium-block.p3{height:60px;background:linear-gradient(180deg,rgba(205,127,50,.15),rgba(205,127,50,.04));border:1px solid rgba(205,127,50,.3);border-bottom:none}
+.rep-sidebar{display:flex;flex-direction:column}
+.rep-sidebar-item{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.rep-sidebar-item:hover{background:var(--elev2)}
+.rep-sidebar-item.active{background:var(--elev2)}
+.rep-sidebar-item:last-child{border-bottom:none}
+.matrix-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.matrix-tbl th{font-family:var(--fh);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:6px 10px;text-align:center;border-bottom:1px solid var(--border)}
+.matrix-tbl td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:center}
+.matrix-tbl tr:last-child td{border-bottom:none}
+.matrix-tbl td:first-child{text-align:left;font-weight:600;color:var(--dim);font-size:11px}
+.section-gap{margin-bottom:16px}
+@media(max-width:900px){.two-col{grid-template-columns:1fr!important}.rep-layout{grid-template-columns:1fr!important}}
+.sg-input,.sg-select{width:100%;border:none;color:var(--text);font-size:13px;font-family:var(--fm);padding:7px 10px;outline:none;height:37px;box-sizing:border-box}
+.sg-input{background:transparent}
+.sg-input:hover{background:rgba(255,255,255,.03);cursor:text}
+.sg-select{background:var(--elev2);cursor:pointer;-webkit-appearance:auto;appearance:auto}
+.sg-select:hover{background:var(--elev)}
+.sg-select option{background:var(--elev2);color:var(--text)}
+.sg-input:focus,.sg-select:focus{background:rgba(79,142,247,.1)!important;box-shadow:inset 0 0 0 2px var(--accent);position:relative;z-index:1}
+.sg-row.sg-sel > td{background:rgba(245,166,35,.07)!important}
+.sg-row.sg-sel > .sg-check{background:rgba(245,166,35,.13)!important}
+.sg-check{width:36px;text-align:center;padding:4px 8px;border-bottom:1px solid var(--border)}
+.sg-cell{border-bottom:1px solid var(--border);padding:0}
+.sg-toolbar{display:flex;align-items:center;gap:8px;padding:7px 14px;background:rgba(245,166,35,.06);border-bottom:1px solid rgba(245,166,35,.2);font-size:12px}
+.sg-row-edit > td{background:var(--elev2)!important}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+th.sortable:hover{color:var(--text)}
+th.sortable.sort-on{color:var(--accent)}
+.sort-arrow{font-size:10px;opacity:.5;margin-left:3px}
+th.sort-on .sort-arrow{opacity:1;color:var(--accent)}
+.tab-hidden{opacity:.4;border-bottom-style:dashed!important}
+.tab-edit-controls{display:inline-flex;align-items:center;gap:2px;margin-left:6px;vertical-align:middle}
+.tab-edit-icon{font-size:11px;cursor:pointer;padding:1px 4px;border-radius:3px;opacity:.65}
+.tab-edit-icon:hover{opacity:1;background:rgba(255,255,255,.12)}
+.em-card{border:1px dashed var(--accent)!important;position:relative}
+.em-hidden{opacity:.35;border-style:dashed!important}
+.em-card-btn{cursor:pointer;padding:2px 7px;border-radius:4px;font-size:11px;color:var(--dim);border:1px solid var(--border);background:var(--elev2);font-family:var(--fm);line-height:1.4}
+.em-card-btn:hover{color:var(--text);background:var(--elev)}
+.em-card-btn.em-on{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700}
+.em-bar{display:flex;align-items:center;gap:6px;padding:7px 12px;background:rgba(245,166,35,.06);border-bottom:1px solid rgba(245,166,35,.25);flex-wrap:wrap}
+.em-sep{width:1px;height:16px;background:var(--border);flex-shrink:0}
+.em-grid-guide{background-image:repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 9px),rgba(245,166,35,.07) calc(25% - 9px),rgba(245,166,35,.07) calc(25% + 7px),transparent calc(25% + 7px),transparent 50%,transparent 50%,transparent calc(75% - 9px),rgba(245,166,35,.07) calc(75% - 9px),rgba(245,166,35,.07) calc(75% + 7px),transparent calc(75% + 7px),transparent 100%);padding:12px;border-radius:var(--r);border:1px dashed rgba(245,166,35,.2);margin:-4px}
+.tour-overlay{position:fixed;inset:0;z-index:400;cursor:pointer;background-size:100% 100%}
+.tour-card{position:fixed;z-index:402;background:var(--elev);border:1px solid var(--accent);border-radius:var(--r);padding:22px 26px;width:400px;max-width:calc(100vw - 32px);box-shadow:0 12px 48px rgba(0,0,0,.7);pointer-events:all}
+.tour-dot{width:7px;height:7px;border-radius:50%;display:inline-block;transition:background .2s}
+@keyframes tourGlow{0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,.7)}50%{box-shadow:0 0 0 10px rgba(245,166,35,0)}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="logo">⚡ HIGHLINE: ARENA 26</div>
+    <div class="logo-sub">Competition Tracker</div>
+  </div>
+  <div class="spacer"></div>
+  <div id="saveDot" style="font-size:11px;color:var(--green);opacity:0;transition:opacity .3s;white-space:nowrap">✓ Saved</div>
+  <div class="season-badge" id="seasonBadge">Season</div>
+  <button id="editModeBtn" class="btn" style="font-size:12px" onclick="toggleEditMode()">✏ Edit Layout</button>
+  <button class="btn-award" onclick="openAwardModal()">+ Award Points</button>
+</div>
+<div id="editModeBar" style="display:none;align-items:center;gap:12px;padding:8px 24px;background:rgba(245,166,35,.07);border-bottom:2px solid var(--accent);font-size:12px;color:var(--accent);font-family:var(--fh);letter-spacing:.05em">
+  <span>✏ EDIT MODE — drag cards to reorder &nbsp;·&nbsp; ✎ rename &nbsp;·&nbsp; 👁 show/hide</span>
+  <div style="flex:1"></div>
+  <button class="btn sm" onclick="sendToCobo()" style="background:linear-gradient(135deg,#a78bfa,#7c3aed);border-color:rgba(167,139,250,.5);color:#fff;font-weight:700">📩 Send to CoBo on Slack!</button>
+</div>
+<div class="tab-nav" id="tabNav"></div>
+<main>
+  <div id="tab-arena" class="tab-section active"></div>
+  <div id="tab-reps" class="tab-section"></div>
+  <div id="tab-scoreboard" class="tab-section"></div>
+  <div id="tab-log" class="tab-section"></div>
+  <div id="tab-points" class="tab-section"></div>
+  <div id="tab-roster" class="tab-section"></div>
+  <div id="tab-settings" class="tab-section"></div>
+</main>
+
+<!-- Award Points Modal -->
+<div class="modal-bg" id="awardModal">
+  <div class="modal">
+    <h2>⚡ Award Points</h2>
+    <div class="form-row c2">
+      <div><label>Date</label><input type="date" id="awdDate"></div>
+      <div><label>Points (editable)</label><input type="number" id="awdPoints" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div><label>Category</label><select id="awdCategory" onchange="onCatChange()"></select></div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Quick-Select Team</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="awdTeamSelect" style="flex:1"><option value="">— Select a team to check all members —</option></select>
+          <button class="btn sm" type="button" onclick="selectTeamReps()">Select All</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Recipient(s)</label>
+        <div id="awdRepList" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:200px;overflow-y:auto;padding:2px"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div><label>Note (optional)</label><input type="text" id="awdNote" placeholder="Optional context"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('awardModal')">Cancel</button>
+      <button class="btn primary" onclick="submitAward()">Award Points</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rep Modal -->
+<div class="modal-bg" id="repModal">
+  <div class="modal">
+    <h2 id="repModalTitle">Add Rep</h2>
+    <div class="form-row c2">
+      <div><label>Name</label><input type="text" id="repName" placeholder="Full name"></div>
+      <div><label>Position</label>
+        <select id="repPosition">
+          <option value="Entry Level">Entry Level</option>
+          <option value="Leader">Leader</option>
+          <option value="Team Lead">Team Lead</option>
+          <option value="Assistant Director">Assistant Director</option>
+          <option value="Director">Director</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row c2">
+      <div><label>Team</label><select id="repTeam"><option value="">— No Team —</option></select></div>
+      <div><label>Trainer</label><select id="repTrainer"><option value="">— None —</option></select></div>
+    </div>
+    <div class="form-row c2">
+      <div><label>Status</label><select id="repStatus"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+      <div></div>
+    </div>
+    <input type="hidden" id="repEditId">
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('repModal')">Cancel</button>
+      <button class="btn primary" onclick="saveRep()">Save Rep</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div class="modal-bg" id="catModal">
+  <div class="modal">
+    <h2 id="catModalTitle">Add Category</h2>
+    <div class="form-row"><div><label>Name</label><input type="text" id="catName" placeholder="e.g. Sale: BF1 40k+"></div></div>
+    <div class="form-row"><div><label>Description (optional)</label><input type="text" id="catDesc" placeholder="Short description"></div></div>
+    <div class="form-row c2">
+      <div><label>Points</label><input type="number" id="catPoints" min="0" placeholder="0"></div>
+      <div><label>Type</label><select id="catType"><option value="individual">Individual</option><option value="team">Team</option></select></div>
+    </div>
+    <input type="hidden" id="catEditId">
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('catModal')">Cancel</button>
+      <button class="btn primary" onclick="saveCat()">Save Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- Team Modal -->
+<div class="modal-bg" id="teamModal">
+  <div class="modal" style="max-width:440px">
+    <h2 id="teamModalTitle">Add Team</h2>
+    <div class="form-row"><div><label>Team Name</label><input type="text" id="tmName" placeholder="e.g. Team Alpha"></div></div>
+    <div class="form-row"><div><label>Team Leader</label><select id="tmLeader"><option value="">— None —</option></select></div></div>
+    <input type="hidden" id="tmEditId">
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('teamModal')">Cancel</button>
+      <button class="btn primary" onclick="saveTeam()">Save Team</button>
+    </div>
+  </div>
+</div>
+
+<!-- Weekly Award Modal -->
+<div class="modal-bg" id="weeklyAwardModal">
+  <div class="modal" style="max-width:480px">
+    <h2>🏆 Weekly #1 Award</h2>
+    <div id="weeklyAwardBody"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="skipWeeklyAward()">Skip This Week</button>
+      <button class="btn primary" onclick="confirmWeeklyAward()">Award Points</button>
+    </div>
+  </div>
+</div>
+
+<!-- Promotion Confirmation Modal -->
+<div class="modal-bg" id="promoModal">
+  <div class="modal" style="max-width:480px">
+    <h2>🏅 Official Promotion?</h2>
+    <div id="promoBody"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="declinePromotion()">No — Just a Role Update</button>
+      <button class="btn primary" onclick="confirmPromotion()">Yes — Award Points</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Seed Roster (from Highline Rep List CSV) ──────────────────────────────────
+const SEED_REPS = [
+  {id:'r001',name:'Maximilian Allen',position:'Director',team:'id_6irhmvdm116mpzov0pm',trainer:'r024',active:true},
+  {id:'r002',name:'Alexander Ansay',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r003',name:'Andrew Beimler',position:'Team Lead',team:'id_9oxa98kt5gjmpzoxwli',trainer:'r024',active:true},
+  {id:'r005',name:'Jesse Cobb',position:'Entry Level',team:'id_glq4tqspqvimpzoulve',trainer:'r030',active:true},
+  {id:'r006',name:'Jaime Corona',position:'Entry Level',team:'id_9oxa98kt5gjmpzoxwli',trainer:'r003',active:true},
+  {id:'r007',name:'Thomas Crenshaw',position:'Admin',team:'',trainer:'',active:true},
+  {id:'r010',name:'Alysia Garcia',position:'Leader',team:'id_glq4tqspqvimpzoulve',trainer:'r024',active:true},
+  {id:'r011',name:'Aimee Garibay-Gutierrez',position:'Leader',team:'id_6irhmvdm116mpzov0pm',trainer:'r001',active:true},
+  {id:'r012',name:'Devany Gill',position:'Entry Level',team:'id_9oxa98kt5gjmpzoxwli',trainer:'r003',active:true},
+  {id:'r014',name:'Sohaib Hafeez',position:'Leader',team:'id_glq4tqspqvimpzoulve',trainer:'r024',active:true},
+  {id:'r015',name:'Simeon Harris',position:'Leader',team:'id_9oxa98kt5gjmpzoxwli',trainer:'r003',active:true},
+  {id:'r017',name:'Ethan Knox',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r019',name:'Celesté Lewis',position:'Leader',team:'id_9oxa98kt5gjmpzoxwli',trainer:'r003',active:true},
+  {id:'r020',name:'Laura Little',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r022',name:'Austin Magers',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r023',name:'Annabelle Marbut',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r024',name:'Ryan McSpadden',position:'Director',team:'id_glq4tqspqvimpzoulve',trainer:'',active:true},
+  {id:'r025',name:'Robert Moser',position:'Leader',team:'id_9oxa98kt5gjmpzoxwli',trainer:'r003',active:true},
+  {id:'r026',name:'Soham Mukherjee',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r027',name:'Douglas Newsom',position:'Entry Level',team:'id_9oxa98kt5gjmpzoxwli',trainer:'r025',active:true},
+  {id:'r028',name:'Thanh Nguyen',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r029',name:'Emma Payton',position:'Entry Level',team:'id_6irhmvdm116mpzov0pm',trainer:'r001',active:true},
+  {id:'r030',name:'Toby Ringel',position:'Leader',team:'id_glq4tqspqvimpzoulve',trainer:'r014',active:true},
+  {id:'r033',name:'Chloe Smith',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r035',name:'Diana Torres',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r036',name:'Jasmin Victor',position:'Entry Level',team:'id_6irhmvdm116mpzov0pm',trainer:'r001',active:true},
+  {id:'r037',name:'Catherine Wang',position:'Entry Level',team:'',trainer:'',active:true},
+  {id:'r038',name:'Isabella White',position:'Leader',team:'id_9oxa98kt5gjmpzoxwli',trainer:'r003',active:true},
+  {id:'r039',name:'Alissa Williams',position:'Entry Level',team:'id_6irhmvdm116mpzov0pm',trainer:'r001',active:true},
+  {id:'r040',name:'Evanthony Wilson',position:'Entry Level',team:'id_glq4tqspqvimpzoulve',trainer:'r014',active:true},
+];
+
+const SEED_TEAMS = [
+  {id:'id_glq4tqspqvimpzoulve',name:'🎲 HIGHROLLERS🎲',leaderId:'r024'},
+  {id:'id_6irhmvdm116mpzov0pm',name:'⚡️KILLOWATT KILLERS⚡️',leaderId:'r001'},
+  {id:'id_9oxa98kt5gjmpzoxwli',name:'🤝GO GETTERS🤝',leaderId:'r003'},
+];
+
+const SEED_COMPETITION_CATS = [
+  {id:'id_ywlsoxmd5pmpzq6xy5',name:'FIRST CONTRACT OTB',desc:'',points:10,type:'individual'},
+  {id:'id_vlnoigfgp8mmpzq796t',name:'LAST CONTRACT OTB',desc:'',points:10,type:'individual'},
+  {id:'id_jepuqqau99rmpzqubji',name:'MOST CONTRACTS TODAY',desc:'',points:15,type:'individual'},
+  {id:'id_fk8ed4lqb7ompzqulc9',name:'HIGHEST REV RODAY',desc:'',points:15,type:'individual'},
+  {id:'id_urvjbqq41ompzqv3qs',name:'HIGHEST USAGE CONTRACT (WEEKLY)',desc:'',points:25,type:'individual'},
+  {id:'id_pd7jqn5isdcmpzqvqfx',name:'HIGHEST PRODUCING TEAM',desc:'',points:25,type:'individual'},
+  {id:'id_f0rmxkuyb6ompzqw1g7',name:'HOLD #1 ENTIRE WEEK',desc:'',points:75,type:'individual'},
+  {id:'id_9kepwlsgd88mpzqxhos',name:'TAKE OVER #1',desc:'',points:50,type:'individual'},
+  {id:'id_epp5fnn8c5dmpzqy1c7',name:'MOVED UP 3 SPOTS',desc:'',points:15,type:'individual'},
+  {id:'id_0hjwa2x0n6y8mpzr1jr3',name:'1ST PLACE (WEEK)',desc:'',points:50,type:'individual'},
+  {id:'id_hi91clwnttumpzr1v68',name:'2ND PLACE (WEEK)',desc:'',points:20,type:'individual'},
+  {id:'id_jzhmhdx5xkmpzr237l',name:'3RD PLACE (WEEK)',desc:'',points:10,type:'individual'},
+  {id:'id_zoom1da0uxmpzr2hce',name:'5 DAY STREAK',desc:'',points:25,type:'individual'},
+  {id:'id_z3mlxth2w7fmpzr2rlu',name:'7 DAY STREAK',desc:'',points:50,type:'individual'},
+  {id:'id_fkes16ygsbdmpzr34ez',name:'10 DAY STREAK',desc:'',points:100,type:'individual'},
+  {id:'id_qrx4zss7l3mpzr3nby',name:'PERSONAL RECORD',desc:'',points:25,type:'individual'},
+  {id:'id_h5no3mqwttmmpzr3wsq',name:'TEAM RECORD',desc:'',points:50,type:'individual'},
+  {id:'id_pk5asum86kimpzr44z5',name:'COMPANY RECORD',desc:'',points:100,type:'individual'},
+  {id:'id_ystbb9vahympzr4kcv',name:'FASTEST MONTLY PROMOTION',desc:'',points:75,type:'individual'},
+  {id:'id_allbeazrruvmpzr5w65',name:'PERFECT ATTENDANCE (WEEK)',desc:'',points:25,type:'individual'},
+];
+
+// ── TX Grid + Default Categories ─────────────────────────────────────────────
+const DEFAULT_CATS = [
+  {id:'cat_a1',name:'Sale: 40k+ BF1',desc:'Base comp, above 40k kWh, BF Tier 1',points:375,type:'individual'},
+  {id:'cat_a2',name:'Sale: 40k+ BF2',desc:'Base comp, above 40k kWh, BF Tier 2',points:310,type:'individual'},
+  {id:'cat_a3',name:'Sale: 40k+ BF3',desc:'Base comp, above 40k kWh, BF Tier 3',points:275,type:'individual'},
+  {id:'cat_a4',name:'Sale: 40k+ BF4',desc:'Base comp, above 40k kWh, BF Tier 4',points:240,type:'individual'},
+  {id:'cat_b1',name:'Sale: <40k BF1',desc:'Base comp, below 40k kWh, BF Tier 1',points:325,type:'individual'},
+  {id:'cat_b2',name:'Sale: <40k BF2',desc:'Base comp, below 40k kWh, BF Tier 2',points:275,type:'individual'},
+  {id:'cat_b3',name:'Sale: <40k BF3',desc:'Base comp, below 40k kWh, BF Tier 3',points:210,type:'individual'},
+  {id:'cat_b4',name:'Sale: <40k BF4',desc:'Base comp, below 40k kWh, BF Tier 4',points:190,type:'individual'},
+  {id:'cat_t1',name:'Term Bonus: 24mo (40k+)',desc:'Term length bonus, 24 month, above 40k',points:100,type:'individual'},
+  {id:'cat_t2',name:'Term Bonus: 36mo+ (40k+)',desc:'Term length bonus, 36 month+, above 40k',points:150,type:'individual'},
+  {id:'cat_t3',name:'Term Bonus: 24mo (<40k)',desc:'Term length bonus, 24 month, below 40k',points:50,type:'individual'},
+  {id:'cat_t4',name:'Term Bonus: 36mo+ (<40k)',desc:'Term length bonus, 36 month+, below 40k',points:100,type:'individual'},
+  {id:'cat_k1',name:'kWh Bonus: 40-45k',desc:'kWh bonus tier',points:25,type:'individual'},
+  {id:'cat_k2',name:'kWh Bonus: 45-50k',desc:'kWh bonus tier',points:50,type:'individual'},
+  {id:'cat_k3',name:'kWh Bonus: 50-55k',desc:'kWh bonus tier',points:80,type:'individual'},
+  {id:'cat_k4',name:'kWh Bonus: 55-60k',desc:'kWh bonus tier',points:120,type:'individual'},
+  {id:'cat_k5',name:'kWh Bonus: 60-80k',desc:'kWh bonus tier',points:180,type:'individual'},
+  {id:'cat_k6',name:'kWh Bonus: 80-100k',desc:'kWh bonus tier',points:250,type:'individual'},
+  {id:'cat_k7',name:'kWh Bonus: 100k+',desc:'kWh bonus tier',points:350,type:'individual'},
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+// Permanent key — never bump this. Add new fields with "if(!p.x) p.x = default" below.
+const SK = 'arena26';
+
+let S = (() => {
+  // Check current key first, then fall back through legacy keys so existing edits survive
+  for(const key of ['arena26','arena26_v4','arena26_v3','arena26_v2','arena26_v1']){
+    try {
+      const raw = localStorage.getItem(key);
+      if(!raw) continue;
+      const p = JSON.parse(raw);
+      // Additive migrations — new fields only, never overwrite existing data
+      if(!p.config)     p.config     = {name:'Highline: Arena 26',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'};
+      if(!p.reps)       p.reps       = JSON.parse(JSON.stringify(SEED_REPS));
+      if(!p.categories) p.categories = JSON.parse(JSON.stringify(DEFAULT_CATS));
+      if(!p.events)          p.events          = [];
+      if(!p.teams)           p.teams           = [];
+      if(!p.processedWeeks)  p.processedWeeks  = [];
+      if(!p.layout)          p.layout          = null; // ensureLayout() fills this
+      // Ensure every rep has the fields introduced in later versions
+      p.reps.forEach(r => {
+        if(!r.position) r.position = 'Entry Level';
+        if(r.team === undefined) r.team = '';
+        if(r.trainer === undefined) r.trainer = '';
+        if(r.active === undefined) r.active = true;
+      });
+      return p;
+    } catch(e){}
+  }
+  return {
+    config:{name:'Highline: Arena 26',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'},
+    reps:JSON.parse(JSON.stringify(SEED_REPS)),
+    categories:[...JSON.parse(JSON.stringify(DEFAULT_CATS)), ...JSON.parse(JSON.stringify(SEED_COMPETITION_CATS))],
+    events:[], teams:JSON.parse(JSON.stringify(SEED_TEAMS)), processedWeeks:[]
+  };
+})();
+
+function save(){
+  localStorage.setItem(SK, JSON.stringify(S));
+  const dot = document.getElementById('saveDot');
+  if(dot){ dot.style.opacity='1'; clearTimeout(dot._t); dot._t=setTimeout(()=>dot.style.opacity='0',1800); }
+}
+function uid(){ return 'id_' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function teamName(id){ if(!id) return ''; const t=S.teams.find(t=>t.id===id); return t?t.name:''; }
+function teamMembers(teamId){ return S.reps.filter(r=>r.team===teamId&&r.active); }
+
+// ── Layout System ─────────────────────────────────────────────────────────────
+const DEFAULT_LAYOUT = {
+  tabs:[
+    {id:'arena',      label:'🏟 Arena',      visible:true},
+    {id:'reps',       label:'👤 Reps',        visible:true},
+    {id:'scoreboard', label:'📋 Scoreboard',  visible:true},
+    {id:'log',        label:'📜 Log',         visible:true},
+    {id:'points',     label:'🎯 Points',      visible:true},
+    {id:'roster',     label:'📋 Roster',      visible:true},
+    {id:'settings',   label:'⚙ Settings',     visible:true},
+  ],
+  arenaCards:[
+    {id:'stats',     label:'Overview',          visible:true, span:4},
+    {id:'podium',    label:'Season Podium',      visible:true, span:4},
+    {id:'weekmonth', label:'Weekly / Monthly',   visible:true, span:4},
+    {id:'standings', label:'Overall Standings',  visible:true, span:4},
+  ]
+};
+
+function ensureLayout(){
+  if(!S.layout) S.layout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
+  if(!S.layout.tabs)       S.layout.tabs       = JSON.parse(JSON.stringify(DEFAULT_LAYOUT.tabs));
+  if(!S.layout.arenaCards) S.layout.arenaCards = JSON.parse(JSON.stringify(DEFAULT_LAYOUT.arenaCards));
+  DEFAULT_LAYOUT.tabs.forEach(dt => { if(!S.layout.tabs.find(t=>t.id===dt.id)) S.layout.tabs.push({...dt}); });
+  DEFAULT_LAYOUT.arenaCards.forEach(dc => { if(!S.layout.arenaCards.find(c=>c.id===dc.id)) S.layout.arenaCards.push({...dc}); });
+  // ensure every card has a span
+  S.layout.arenaCards.forEach(c => { if(!c.span) c.span = 4; });
+}
+function lTab(id){ return S.layout.tabs.find(t=>t.id===id) || {id,label:id,visible:true}; }
+function lCard(id){ return S.layout.arenaCards.find(c=>c.id===id) || {id,label:id,visible:true}; }
+
+let _editMode = false;
+let _activeTab = 'arena';
+let _dragCardId = null;
+
+function renderTabNav(){
+  const nav = document.getElementById('tabNav'); if(!nav) return;
+  nav.innerHTML = S.layout.tabs
+    .filter(t => t.visible || _editMode)
+    .map(t => `
+      <button class="tab-btn${_activeTab===t.id?' active':''}${!t.visible?' tab-hidden':''}" data-tab="${t.id}">
+        ${esc(t.label)}
+        ${_editMode ? `<span class="tab-edit-controls" onclick="event.stopPropagation()">
+          <span class="tab-edit-icon" onclick="renameTab('${t.id}')" title="Rename">✎</span>
+          <span class="tab-edit-icon" onclick="toggleTabVisible('${t.id}')" title="${t.visible?'Hide':'Show'}">${t.visible?'👁':'🚫'}</span>
+        </span>` : ''}
+      </button>`).join('');
+}
+
+function switchActiveTab(t){
+  _activeTab = t;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab===t));
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.toggle('active', s.id==='tab-'+t));
+  renderTab(t);
+}
+
+// Tab nav — event delegation
+document.getElementById('tabNav').addEventListener('click', e => {
+  const btn = e.target.closest('.tab-btn'); if(!btn) return;
+  const t = btn.dataset.tab; if(!t) return;
+  switchActiveTab(t);
+});
+
+// ── Tab Routing ───────────────────────────────────────────────────────────────
+function renderTab(t){
+  if(t==='arena') renderArena();
+  else if(t==='reps') renderReps();
+  else if(t==='scoreboard') renderScoreboard();
+  else if(t==='log') renderLog();
+  else if(t==='points') renderPoints();
+  else if(t==='roster') renderRoster();
+  else if(t==='settings') renderSettings();
+}
+
+// ── Calculations ──────────────────────────────────────────────────────────────
+function repPoints(repId, from, to){
+  return S.events.filter(e => {
+    if(!e.repIds.includes(repId)) return false;
+    if(from && e.date < from) return false;
+    if(to && e.date > to) return false;
+    return true;
+  }).reduce((s,e) => s + e.points, 0);
+}
+
+function leaderboard(from, to){
+  return S.reps.filter(r => r.active)
+    .map(r => ({...r, pts: repPoints(r.id, from, to)}))
+    .sort((a,b) => b.pts - a.pts);
+}
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function weekBounds(){
+  const d = new Date(), day = d.getDay();
+  const mon = new Date(d); mon.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  return [mon.toISOString().slice(0,10), sun.toISOString().slice(0,10)];
+}
+
+function monthBounds(){
+  const d = new Date();
+  return [
+    new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10),
+    new Date(d.getFullYear(), d.getMonth()+1, 0).toISOString().slice(0,10)
+  ];
+}
+
+function rankIcon(i){ return i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1); }
+function rankClass(i){ return i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''; }
+
+// ── Arena Tab ─────────────────────────────────────────────────────────────────
+function setCardSize(id, span){
+  const c = lCard(id); c.span = parseInt(span)||4; save(); renderArena();
+}
+
+function moveCardUp(id){
+  const cards = S.layout.arenaCards, i = cards.findIndex(c=>c.id===id);
+  if(i <= 0) return;
+  [cards[i-1], cards[i]] = [cards[i], cards[i-1]];
+  save(); renderArena();
+}
+
+function moveCardDown(id){
+  const cards = S.layout.arenaCards, i = cards.findIndex(c=>c.id===id);
+  if(i < 0 || i >= cards.length-1) return;
+  [cards[i], cards[i+1]] = [cards[i+1], cards[i]];
+  save(); renderArena();
+}
+
+function _cardShell(c, headerHtml, bodyHtml){
+  const span = Math.min(c.span||4, 4);
+  const hidden = c.visible === false;
+  const cards = S.layout.arenaCards;
+  const idx = cards.findIndex(x=>x.id===c.id);
+
+  // Visual width picker: filled vs empty blocks  ■■□□  etc.
+  const widthBtns = [1,2,3,4].map(s => {
+    const icon = '■'.repeat(s) + '□'.repeat(4-s);
+    const tips = ['¼ width','½ width','¾ width','Full width'];
+    return `<button class="em-card-btn${span===s?' em-on':''}" onclick="setCardSize('${c.id}',${s})" title="${tips[s-1]}" style="font-size:9px;letter-spacing:1px;font-family:monospace;padding:2px 5px">${icon}</button>`;
+  }).join('');
+
+  const editBar = _editMode ? `<div class="em-bar">
+    <div style="display:flex;gap:2px">
+      <button class="em-card-btn" onclick="moveCardUp('${c.id}')" ${idx===0?'disabled style="opacity:.3"':''} title="Move earlier">↑</button>
+      <button class="em-card-btn" onclick="moveCardDown('${c.id}')" ${idx===cards.length-1?'disabled style="opacity:.3"':''} title="Move later">↓</button>
+    </div>
+    <div class="em-sep"></div>
+    <span style="font-size:10px;color:var(--dim);font-family:var(--fh);letter-spacing:.04em">WIDTH:</span>
+    <div style="display:flex;gap:2px">${widthBtns}</div>
+    <div class="em-sep"></div>
+    <button class="em-card-btn" onclick="renameCard('${c.id}')">✎ Rename</button>
+    <button class="em-card-btn${hidden?' em-on':''}" onclick="toggleCardVisible('${c.id}')">${hidden?'🚫 Hidden':'👁 Visible'}</button>
+  </div>` : '';
+
+  return `<div class="card${_editMode?' em-card':''}${hidden?' em-hidden':''}"
+    data-card-id="${c.id}"
+    style="grid-column:span ${span};min-width:0;overflow:hidden;align-self:start">
+    ${editBar}
+    ${hidden && _editMode
+      ? `<div style="padding:14px;color:var(--dim);font-size:12px;text-align:center;font-style:italic">Hidden in display mode · click 🚫 Hidden to restore</div>`
+      : (headerHtml||'') + bodyHtml}
+  </div>`;
+}
+
+function renderArena(){
+  const el = document.getElementById('tab-arena');
+  if(!S.reps.length){
+    el.innerHTML = `<div class="empty-state"><div class="icon">🏟</div><p>No reps yet. Head to <strong>Settings</strong> to add competitors.</p></div>`;
+    return;
+  }
+  const [wS,wE] = weekBounds(), [mS,mE] = monthBounds(), today = todayStr();
+  const overall  = leaderboard(S.config.startDate, S.config.endDate);
+  const weekly   = leaderboard(wS, wE);
+  const monthly  = leaderboard(mS, mE);
+  const daily    = leaderboard(today, today);
+  const leader   = overall[0];
+  const totalPts = overall.reduce((s,r)=>s+r.pts,0);
+  const podiumOrder = [overall[1],overall[0],overall[2]];
+  const podiumCls   = ['p2','p1','p3'];
+  const podiumMedal = ['🥈','🥇','🥉'];
+
+  function cardBody(id, span){
+    if(id==='stats'){
+      const statCols = span>=4 ? 'repeat(5,1fr)' : span===3 ? 'repeat(3,1fr)' : span===2 ? 'repeat(2,1fr)' : '1fr';
+      return `<div class="card-body">
+        <div style="display:grid;grid-template-columns:${statCols};gap:12px">
+          <div class="stat-card gold-card"><div class="lbl">Season Leader</div><div class="val">${leader&&leader.pts>0?leader.name.split(' ')[0]:'—'}</div><div class="sub">${leader&&leader.pts>0?leader.pts.toLocaleString()+' pts':'No data yet'}</div></div>
+          <div class="stat-card accent-card"><div class="lbl">Today's Leader</div><div class="val">${daily[0]&&daily[0].pts>0?daily[0].name.split(' ')[0]:'—'}</div><div class="sub">${daily[0]&&daily[0].pts>0?daily[0].pts.toLocaleString()+' pts today':'No events today'}</div></div>
+          <div class="stat-card green-card"><div class="lbl">Week Leader</div><div class="val">${weekly[0]&&weekly[0].pts>0?weekly[0].name.split(' ')[0]:'—'}</div><div class="sub">${weekly[0]&&weekly[0].pts>0?weekly[0].pts.toLocaleString()+' pts this week':'No events this week'}</div></div>
+          <div class="stat-card purple-card"><div class="lbl">Month Leader</div><div class="val">${monthly[0]&&monthly[0].pts>0?monthly[0].name.split(' ')[0]:'—'}</div><div class="sub">${monthly[0]&&monthly[0].pts>0?monthly[0].pts.toLocaleString()+' pts this month':'No events this month'}</div></div>
+          <div class="stat-card"><div class="lbl">Total Events</div><div class="val" style="color:var(--text)">${S.events.length}</div><div class="sub">${totalPts.toLocaleString()} pts awarded</div></div>
+        </div></div>`;
+    }
+
+    if(id==='podium') return `<div class="card-body">
+      <div class="podium">
+        ${podiumOrder.map((r,i)=>{const f=r&&r.pts>0;return `<div class="podium-slot">
+          <div class="podium-name" style="${!f?'color:var(--dim)':''}">${f?r.name:'—'}</div>
+          <div class="podium-pts">${f?r.pts.toLocaleString()+' pts':'0 pts'}</div>
+          <div class="podium-block ${podiumCls[i]}" style="${!f?'opacity:.3':''}">${podiumMedal[i]}</div>
+        </div>`;}).join('')}
+      </div></div>`;
+
+    if(id==='weekmonth'){
+      const cols = span>=3 ? '1fr 1fr' : '1fr';
+      return `<div style="display:grid;grid-template-columns:${cols};gap:12px;padding:14px">
+        <div>
+          <div style="font-family:var(--fh);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">📅 This Week <span class="badge green" style="font-size:9px">${wS} – ${wE}</span></div>
+          ${miniLB(weekly)}
+        </div>
+        <div>
+          <div style="font-family:var(--fh);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">📆 This Month <span class="badge purple" style="font-size:9px">${mS.slice(0,7)}</span></div>
+          ${miniLB(monthly)}
+        </div>
+      </div>`;
+    }
+
+    if(id==='standings') return `<div class="card-body" style="padding:0">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Rank</th>
+          ${_th('arena','name','Rep')}${_th('arena','team','Team')}
+          ${_th('arena','pts','Season Pts','text-align:right')}${_th('arena','evts','Events','text-align:right')}
+        </tr></thead>
+        <tbody>
+          ${_sortArr(overall.map(r=>({...r,evts:S.events.filter(e=>e.repIds.includes(r.id)).length})),'arena',{name:r=>r.name,team:r=>teamName(r.team)||'',pts:r=>r.pts,evts:r=>r.evts}).map((r,i)=>`<tr onclick="goToRep('${r.id}')" style="cursor:pointer">
+            <td class="${rankClass(i)}">${rankIcon(i)}</td>
+            <td><strong>${r.name}</strong></td>
+            <td>${teamName(r.team)?`<span class="badge dim">${esc(teamName(r.team))}</span>`:'—'}</td>
+            <td class="num"><strong>${r.pts.toLocaleString()}</strong></td>
+            <td class="num">${r.evts}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div></div>`;
+    return '';
+  }
+
+  function cardHeader(id, label, span){
+    if(id==='stats' && !_editMode) return ''; // stats has no header in display mode
+    const badges = {
+      podium:`<span class="badge accent">${S.config.quarter}</span>`,
+      standings:`<span class="badge accent">${S.config.quarter}</span>`,
+    };
+    return `<div class="card-header"><h3>${esc(label)}</h3>${badges[id]||''}</div>`;
+  }
+
+  const gridCards = S.layout.arenaCards
+    .filter(c => c.visible !== false || _editMode)
+    .map(c => _cardShell(c, cardHeader(c.id, c.label, c.span||4), cardBody(c.id, c.span||4)))
+    .join('');
+
+  const gridClass = _editMode ? ' em-grid-guide' : '';
+  el.innerHTML = `<div class="${gridClass}" style="display:grid;grid-template-columns:repeat(4,1fr);grid-auto-flow:dense;gap:16px;align-items:start">${gridCards}</div>`;
+}
+
+function miniLB(lb){
+  const top = lb.filter(r => r.pts > 0).slice(0,6);
+  if(!top.length) return `<div class="empty-state" style="padding:20px">No events in this period</div>`;
+  return `<table><thead><tr><th>Rank</th><th>Rep</th><th class="num">Pts</th></tr></thead><tbody>
+    ${top.map((r,i) => `<tr><td class="${rankClass(i)}">${rankIcon(i)}</td><td>${r.name}</td><td class="num">${r.pts.toLocaleString()}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ── Reps Tab ──────────────────────────────────────────────────────────────────
+let selRepId = null;
+
+function goToRep(id){
+  selRepId = id;
+  switchActiveTab('reps');
+}
+
+function renderReps(){
+  const el = document.getElementById('tab-reps');
+  if(!S.reps.length){
+    el.innerHTML = `<div class="empty-state"><div class="icon">👤</div><p>No reps added yet. Go to Settings.</p></div>`;
+    return;
+  }
+  const lb = leaderboard(S.config.startDate, S.config.endDate);
+  if(!selRepId || !S.reps.find(r=>r.id===selRepId)) selRepId = lb[0]?.id;
+  const rep = S.reps.find(r => r.id === selRepId);
+
+  el.innerHTML = `
+  <div style="display:grid;grid-template-columns:220px 1fr;gap:16px" class="rep-layout">
+    <div class="card" style="margin-bottom:0;overflow:hidden">
+      <div class="card-header"><h3>Competitors</h3></div>
+      <div class="rep-sidebar">
+        ${lb.map((r,i) => `
+          <div class="rep-sidebar-item ${r.id===selRepId?'active':''}" onclick="selectRep('${r.id}')">
+            <span style="font-family:var(--fh);font-size:12px;width:28px;color:${i===0?'var(--gold)':i===1?'var(--silver)':i===2?'var(--bronze)':'var(--dim)'}">${rankIcon(i)}</span>
+            <span style="flex:1;font-size:13px;font-weight:${r.id===selRepId?600:400}">${r.name}</span>
+            <span style="font-size:12px;color:var(--accent);font-family:var(--fh)">${r.pts.toLocaleString()}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div id="repDetail">${rep ? repDetail(rep) : ''}</div>
+  </div>`;
+}
+
+function selectRep(id){
+  selRepId = id;
+  const rep = S.reps.find(r => r.id === id);
+  document.getElementById('repDetail').innerHTML = rep ? repDetail(rep) : '';
+  document.querySelectorAll('.rep-sidebar-item').forEach(el => {
+    const eid = el.getAttribute('onclick').match(/'(.+)'/)[1];
+    el.classList.toggle('active', eid === id);
+    el.querySelector('span:nth-child(2)').style.fontWeight = eid === id ? 600 : 400;
+  });
+}
+
+function repDetail(rep){
+  const [wS,wE] = weekBounds(), [mS,mE] = monthBounds(), today = todayStr();
+  const seasonPts = repPoints(rep.id, S.config.startDate, S.config.endDate);
+  const weekPts   = repPoints(rep.id, wS, wE);
+  const monthPts  = repPoints(rep.id, mS, mE);
+  const todayPts  = repPoints(rep.id, today, today);
+  const evts = S.events.filter(e => e.repIds.includes(rep.id)).sort((a,b) => b.date.localeCompare(a.date));
+
+  const breakdown = {};
+  evts.forEach(e => {
+    if(!breakdown[e.categoryId]) breakdown[e.categoryId] = {pts:0, count:0};
+    breakdown[e.categoryId].pts += e.points;
+    breakdown[e.categoryId].count++;
+  });
+
+  const overallLB = leaderboard(S.config.startDate, S.config.endDate);
+  const rank = overallLB.findIndex(r => r.id === rep.id);
+
+  return `
+  <div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="stat-card" style="border-color:rgba(255,215,0,.2)"><div class="lbl">Season Rank</div><div class="val ${rankClass(rank)}">${rankIcon(rank)}</div><div class="sub">${teamName(rep.team)||'—'}</div></div>
+    <div class="stat-card gold-card"><div class="lbl">Season Total</div><div class="val">${seasonPts.toLocaleString()}</div><div class="sub">points</div></div>
+    <div class="stat-card green-card"><div class="lbl">This Week</div><div class="val">${weekPts.toLocaleString()}</div><div class="sub">points</div></div>
+    <div class="stat-card purple-card"><div class="lbl">This Month</div><div class="val">${monthPts.toLocaleString()}</div><div class="sub">points</div></div>
+    <div class="stat-card accent-card"><div class="lbl">Today</div><div class="val">${todayPts.toLocaleString()}</div><div class="sub">points</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Category Breakdown</h3></div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Category</th><th>Type</th><th class="num">Events</th><th class="num">Total Pts</th></tr></thead>
+        <tbody>
+          ${Object.entries(breakdown).sort((a,b)=>b[1].pts-a[1].pts).map(([cid,d]) => {
+            const cat = S.categories.find(c => c.id === cid);
+            return `<tr><td>${cat?cat.name:cid}</td><td>${cat?`<span class="badge ${cat.type==='team'?'accent':'purple'}">${cat.type}</span>`:'—'}</td><td class="num">${d.count}</td><td class="num"><strong>${d.pts.toLocaleString()}</strong></td></tr>`;
+          }).join('')}
+          ${!Object.keys(breakdown).length ? '<tr><td colspan="4" style="text-align:center;color:var(--dim);padding:16px">No events recorded</td></tr>' : ''}
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Event History</h3><span class="badge dim">${evts.length} events</span></div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date</th><th>Category</th><th>Note</th><th class="num">Pts</th><th></th></tr></thead>
+        <tbody>
+          ${evts.map(e => {
+            const cat = S.categories.find(c => c.id === e.categoryId);
+            return `<tr><td>${e.date}</td><td>${cat?cat.name:e.categoryId}</td><td style="color:var(--dim);max-width:200px;overflow:hidden;text-overflow:ellipsis">${e.note||''}</td><td class="num"><strong>${e.points.toLocaleString()}</strong></td><td><button class="btn xs danger" onclick="deleteEvent('${e.id}')">✕</button></td></tr>`;
+          }).join('')}
+          ${!evts.length ? '<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:16px">No events yet</td></tr>' : ''}
+        </tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+// ── Scoreboard Tab ────────────────────────────────────────────────────────────
+let _sbExpanded = false;
+
+function renderScoreboard(){
+  const el = document.getElementById('tab-scoreboard');
+  const [wS,wE] = weekBounds(), [mS,mE] = monthBounds(), today = todayStr();
+  const periods = [
+    {label:'Season', sub:S.config.quarter,  badge:'accent', data:leaderboard(S.config.startDate,S.config.endDate)},
+    {label:'Month',  sub:mS.slice(0,7),     badge:'purple', data:leaderboard(mS,mE)},
+    {label:'Week',   sub:wS+' – '+wE,       badge:'green',  data:leaderboard(wS,wE)},
+    {label:'Today',  sub:today,             badge:'gold',   data:leaderboard(today,today)},
+  ];
+
+  if(_sbExpanded){
+    el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:14px">
+      <button class="btn" onclick="_sbExpanded=false;renderScoreboard()">← Top 10 View</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="two-col">
+      ${periods.map(p=>`
+        <div class="card">
+          <div class="card-header"><h3>${p.label} Standings</h3><span class="badge ${p.badge}">${p.sub}</span></div>
+          <div class="card-body" style="padding:0">
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Rank</th>${_th('sb_'+p.label,'name','Rep')}${_th('sb_'+p.label,'pts','Pts','text-align:right')}</tr></thead>
+              <tbody>
+                ${_sortArr(p.data,'sb_'+p.label,{name:r=>r.name,pts:r=>r.pts}).map((r,i)=>`<tr onclick="goToRep('${r.id}')" style="cursor:pointer">
+                  <td class="${rankClass(i)}">${rankIcon(i)}</td>
+                  <td>${r.name}${teamName(r.team)?` <span class="badge dim" style="font-size:9px">${esc(teamName(r.team))}</span>`:''}</td>
+                  <td class="num"><strong>${r.pts.toLocaleString()}</strong></td>
+                </tr>`).join('')}
+                ${!p.data.length?'<tr><td colspan="3" style="text-align:center;color:var(--dim);padding:16px">No reps</td></tr>':''}
+              </tbody>
+            </table></div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+    return;
+  }
+
+  // ── Compact top-10 view ───────────────────────────────────────────────────
+  el.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:14px">
+    <button class="btn primary" onclick="_sbExpanded=true;renderScoreboard()">📋 Complete Lists</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+    ${periods.map(p => sbCompactCard(p)).join('')}
+  </div>`;
+}
+
+function sbCompactCard(p){
+  const top10 = p.data.slice(0,10);
+  const medalColors = ['var(--gold)','var(--silver)','var(--bronze)'];
+  return `
+  <div class="card" style="margin-bottom:0">
+    <div class="card-header" style="padding:9px 14px">
+      <h3 style="font-size:13px;letter-spacing:.06em">${p.label}</h3>
+      <span class="badge ${p.badge}" style="font-size:9px">${p.sub}</span>
+    </div>
+    ${top10.map((r,i)=>`
+      <div onclick="goToRep('${r.id}')" style="display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--elev2)'" onmouseout="this.style.background=''">
+        <span style="font-family:var(--fh);font-size:12px;width:26px;flex-shrink:0;color:${i<3?medalColors[i]:'var(--dim)'}">
+          ${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}
+        </span>
+        <span style="flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.name)}</span>
+        <span style="font-size:12px;font-family:var(--fh);font-weight:600;color:var(--accent);flex-shrink:0">${r.pts.toLocaleString()}</span>
+      </div>`).join('')}
+    ${!top10.length?`<div style="text-align:center;color:var(--dim);padding:20px;font-size:12px">No events this period</div>`:''}
+    ${p.data.length>10?`<div style="padding:7px 14px;font-size:11px;color:var(--dim);text-align:center">${p.data.length-10} more · <span style="color:var(--accent);cursor:pointer" onclick="_sbExpanded=true;renderScoreboard()">see all</span></div>`:''}
+  </div>`;
+}
+
+// ── Log Tab ───────────────────────────────────────────────────────────────────
+function renderLog(){
+  const el = document.getElementById('tab-log');
+  const acc = {
+    date:   e => e.date,
+    reps:   e => e.repIds.map(id=>S.reps.find(r=>r.id===id)?.name||'').join(', '),
+    cat:    e => S.categories.find(c=>c.id===e.categoryId)?.name||'',
+    points: e => e.points,
+  };
+  const base = [...S.events].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  const sorted = _sort['log'] ? _sortArr(base,'log',acc) : base;
+  el.innerHTML = `
+  <div class="card">
+    <div class="card-header"><h3>📜 Points Log</h3><span class="badge accent">${sorted.length} events</span></div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          ${_th('log','date','Date')}
+          ${_th('log','reps','Rep(s)')}
+          ${_th('log','cat','Category')}
+          <th>Type</th><th>Note</th>
+          ${_th('log','points','Pts','text-align:right')}
+          <th></th>
+        </tr></thead>
+        <tbody>
+          ${sorted.map(e => {
+            const cat = S.categories.find(c => c.id === e.categoryId);
+            const names = e.repIds.map(id => { const r=S.reps.find(r=>r.id===id); return r?r.name:'?'; }).join(', ');
+            return `<tr>
+              <td>${e.date}</td>
+              <td>${names}</td>
+              <td>${cat?cat.name:e.categoryId}</td>
+              <td>${cat?`<span class="badge ${cat.type==='team'?'accent':'purple'}">${cat.type}</span>`:'—'}</td>
+              <td style="color:var(--dim)">${e.note||''}</td>
+              <td class="num"><strong>${e.points.toLocaleString()}</strong></td>
+              <td><button class="btn xs danger" onclick="deleteEvent('${e.id}')">✕</button></td>
+            </tr>`;
+          }).join('')}
+          ${!sorted.length?'<tr><td colspan="7" style="text-align:center;color:var(--dim);padding:32px">No events yet. Use <strong>Award Points</strong> to get started.</td></tr>':''}
+        </tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+// ── Sort Helpers ─────────────────────────────────────────────────────────────
+const _sort = {};
+function _sortArr(arr, id, acc){
+  const s = _sort[id]; if(!s) return arr;
+  return [...arr].sort((a,b)=>{
+    let av = acc?.[s.f]?.(a) ?? a[s.f] ?? '';
+    let bv = acc?.[s.f]?.(b) ?? b[s.f] ?? '';
+    if(typeof av==='string') return s.d * av.localeCompare(bv);
+    return s.d * (av - bv);
+  });
+}
+function _sortBy(id, field){
+  const cur = _sort[id];
+  _sort[id] = { f: field, d: cur?.f===field ? -cur.d : 1 };
+  renderTab(document.querySelector('.tab-btn.active').dataset.tab);
+}
+function _th(id, field, label, cls=''){
+  const s=_sort[id], on=s?.f===field;
+  const arrow = on ? (s.d===1?' ▲':' ▼') : ' <span class="sort-arrow">⇅</span>';
+  return `<th class="sortable${on?' sort-on':''}" ${cls?`style="${cls}"`:''}onclick="_sortBy('${id}','${field}')">${label}${arrow}</th>`;
+}
+
+// ── Spreadsheet Grid Helpers ──────────────────────────────────────────────────
+let _sgSel = {roster: new Set(), points: new Set()};
+let _sgLastCk = {roster: null, points: null};
+
+function _sgRowIds(grid){ return [...document.querySelectorAll(`#${grid}Body .sg-row`)].map(r=>r.dataset.id); }
+
+function _sgSync(grid){
+  const sel = _sgSel[grid];
+  const bar = document.getElementById(`${grid}Toolbar`);
+  const cnt = document.getElementById(`${grid}SelCount`);
+  if(bar){ if(sel.size>0){bar.style.display='flex';if(cnt)cnt.textContent=sel.size+' selected';}else{bar.style.display='none';} }
+  document.querySelectorAll(`#${grid}Body .sg-row`).forEach(row=>{
+    const cb=row.querySelector('.row-cb'), on=sel.has(row.dataset.id);
+    row.classList.toggle('sg-sel',on); if(cb)cb.checked=on;
+  });
+  const all=document.getElementById(`${grid}SelectAll`);
+  if(all){const ids=_sgRowIds(grid);all.checked=ids.length>0&&ids.every(i=>sel.has(i));all.indeterminate=sel.size>0&&!all.checked;}
+}
+
+function sgCheckClick(e, grid, id){
+  e.stopPropagation();
+  const sel=_sgSel[grid];
+  if(e.shiftKey&&_sgLastCk[grid]){
+    const ids=_sgRowIds(grid),a=ids.indexOf(_sgLastCk[grid]),b=ids.indexOf(id);
+    ids.slice(Math.min(a,b),Math.max(a,b)+1).forEach(i=>sel.add(i));
+  } else { if(sel.has(id))sel.delete(id);else sel.add(id); }
+  _sgLastCk[grid]=id; _sgSync(grid);
+}
+
+function sgSelectAll(grid, on){
+  const sel=_sgSel[grid]; sel.clear();
+  if(on) _sgRowIds(grid).forEach(id=>sel.add(id));
+  _sgSync(grid);
+}
+
+function sgKey(e, el, grid){
+  if(e.key==='Tab'){
+    e.preventDefault();
+    const row=el.closest('tr'), cells=[...row.querySelectorAll('.sg-input,.sg-select')], idx=cells.indexOf(el);
+    if(e.shiftKey){ if(idx>0)cells[idx-1].focus(); else{const p=row.previousElementSibling;if(p){const pc=[...p.querySelectorAll('.sg-input,.sg-select')];if(pc.length)pc[pc.length-1].focus();}} }
+    else { if(idx<cells.length-1)cells[idx+1].focus(); else{const n=row.nextElementSibling;if(n){const nc=[...n.querySelectorAll('.sg-input,.sg-select')];if(nc.length)nc[0].focus();}} }
+  } else if(e.key==='Enter'){
+    e.preventDefault();
+    const row=el.closest('tr'),cells=[...row.querySelectorAll('.sg-input,.sg-select')],col=cells.indexOf(el);
+    const next=row.nextElementSibling;
+    if(next){const nc=[...next.querySelectorAll('.sg-input,.sg-select')];if(nc[col])nc[col].focus();}
+  } else if(e.key==='Escape'){ el.blur(); }
+}
+
+function sgCopyGrid(grid){
+  const sel=_sgSel[grid]; if(!sel.size){toast('Select rows first');return;}
+  let lines=[];
+  if(grid==='roster'){
+    lines=['Name\tPosition\tTeam\tTrainer\tStatus'];
+    [...sel].forEach(id=>{const r=S.reps.find(r=>r.id===id);if(r)lines.push([r.name,r.position||'',teamName(r.team)||'',S.reps.find(x=>x.id===r.trainer)?.name||'',r.active?'Active':'Inactive'].join('\t'));});
+  } else {
+    lines=['Name\tDescription\tType\tPoints'];
+    [...sel].forEach(id=>{const c=S.categories.find(c=>c.id===id);if(c)lines.push([c.name,c.desc||'',c.type,c.points].join('\t'));});
+  }
+  navigator.clipboard?.writeText(lines.join('\n'));
+  toast(`Copied ${sel.size} row${sel.size>1?'s':''} to clipboard`);
+}
+
+function sgDeleteSelected(grid){
+  const sel=_sgSel[grid]; if(!sel.size)return;
+  const n=sel.size;
+  if(!confirm(`Delete ${n} selected row${n>1?'s':''}?`))return;
+  if(grid==='roster'){ S.reps=S.reps.filter(r=>!sel.has(r.id)); save(); _sgSel.roster.clear(); renderRoster(); }
+  else { S.categories=S.categories.filter(c=>!sel.has(c.id)||c.system); save(); _sgSel.points.clear(); renderPoints(); }
+  toast(`Deleted ${n} row${n>1?'s':''}`);
+}
+
+// ── Points Tab ────────────────────────────────────────────────────────────────
+function renderPoints(){
+  const el = document.getElementById('tab-points');
+  _sgSel.points.clear();
+  const promoCats  = S.categories.filter(c=>c.system && c.id !== 'cat_weekly_win');
+  const weeklyCat  = S.categories.find(c=>c.id === 'cat_weekly_win');
+  const regCats    = S.categories.filter(c=>!c.system);
+
+  const acc = { type: c=>c.type, points: c=>c.points };
+  const sortedReg = _sortArr(regCats, 'points', acc);
+
+  // Weekly award section data
+  const [wS,wE] = weekBounds();
+  const curWeekLB = leaderboard(wS, wE).filter(r => r.pts > 0);
+  const weeklyHistory = [...(S.processedWeeks||[])].reverse();
+
+  el.innerHTML = `
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header"><h3>🏅 Automated — Promotion Points</h3><span class="badge gold">Auto</span></div>
+    <div class="tbl-wrap"><table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr><th>Category</th><th>Description</th><th style="width:160px">Points Awarded</th></tr></thead>
+      <tbody>${promoCats.map(c=>`<tr>
+        <td style="border-bottom:1px solid var(--border);padding:8px 12px"><strong>${esc(c.name)}</strong></td>
+        <td style="border-bottom:1px solid var(--border);color:var(--dim);padding:8px 12px;font-size:12px">${esc(c.desc||'')}</td>
+        <td class="sg-cell"><input class="sg-input" type="number" min="0" value="${c.points}" data-id="${c.id}" onchange="sysCatPtsChange(this)" onkeydown="sgKey(event,this,'points')" style="text-align:right;color:var(--gold);font-family:var(--fh);font-size:17px;font-weight:700"></td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header"><h3>🏆 Weekly #1 Award</h3><span class="badge gold">Auto</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0" class="two-col">
+      <div style="padding:16px;border-right:1px solid var(--border)">
+        <div style="font-family:var(--fh);font-size:11px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-bottom:10px">Current Week Leader</div>
+        ${curWeekLB.length ? `
+          <div style="font-family:var(--fh);font-size:20px;font-weight:700;margin-bottom:4px">🥇 ${esc(curWeekLB[0].name)}</div>
+          <div style="font-size:12px;color:var(--dim)">${curWeekLB[0].pts.toLocaleString()} pts &nbsp;·&nbsp; ${wS} – ${wE}</div>
+          ${curWeekLB.length>1?`<div style="margin-top:8px;font-size:11px;color:var(--dim)">2nd: ${esc(curWeekLB[1].name)} (${curWeekLB[1].pts.toLocaleString()} pts)</div>`:''}` :
+          `<div style="color:var(--dim);font-size:13px">No events this week yet</div>`}
+        <div style="margin-top:16px">
+          <label style="font-size:11px;font-family:var(--fh);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:4px">Points Awarded End-of-Week</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" min="0" value="${weeklyCat?.points||200}" id="weeklyPtsInput" style="width:110px;background:var(--elev2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:13px;font-family:var(--fm)" onchange="weeklyPtsChange(this)">
+            <span style="font-size:12px;color:var(--dim)">pts to #1 each Sunday</span>
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px">
+        <div style="font-family:var(--fh);font-size:11px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-bottom:10px">Past Weekly Winners</div>
+        ${weeklyHistory.length ? `
+          <div style="display:flex;flex-direction:column;gap:0;max-height:220px;overflow-y:auto">
+            ${weeklyHistory.map(w=>{
+              const rep = w.winnerId ? S.reps.find(r=>r.id===w.winnerId) : null;
+              return `<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--dim);flex-shrink:0">${w.monday}</span>
+                <span style="flex:1">${rep?esc(rep.name):'—'}</span>
+                ${w.awarded?`<span style="color:var(--green);font-family:var(--fh);font-weight:600">+${(w.awardedPts||0).toLocaleString()} pts</span>`:`<span style="color:var(--dim)">Skipped</span>`}
+              </div>`;
+            }).join('')}
+          </div>` : `<div style="color:var(--dim);font-size:12px">No weekly awards recorded yet</div>`}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>🎯 Point Categories</h3>
+      <span class="badge dim">${regCats.length} categories</span>
+      <div style="flex:1"></div>
+      <button class="btn sm primary" onclick="openCatModal()">+ Add Category</button>
+    </div>
+    <div id="pointsToolbar" class="sg-toolbar" style="display:none">
+      <span id="pointsSelCount" class="badge accent"></span>
+      <button class="btn xs danger" onclick="sgDeleteSelected('points')">Delete Selected</button>
+      <button class="btn xs" onclick="sgCopyGrid('points')">📋 Copy</button>
+      <button class="btn xs" onclick="sgSelectAll('points',false)">Clear</button>
+    </div>
+    <div class="tbl-wrap"><table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr>
+        <th class="sg-check"><input type="checkbox" id="pointsSelectAll" onchange="sgSelectAll('points',this.checked)" style="width:auto"></th>
+        ${_th('points','name','Name')}
+        ${_th('points','desc','Description')}
+        ${_th('points','type','Type','width:120px')}
+        ${_th('points','points','Points','text-align:right;width:110px')}
+      </tr></thead>
+      <tbody id="pointsBody">
+        ${sortedReg.map(c=>pointDisplayRow(c)).join('')}
+        ${!regCats.length?`<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:24px">No categories — click + Add Category</td></tr>`:''}
+      </tbody>
+    </table></div>
+    <div style="padding:6px 14px;font-size:11px;color:var(--dim)">💡 Click any row to edit inline · click away to save</div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><h3>📊 TX Grid — Pay Matrix Reference</h3><span class="badge dim">Read-Only Source of Truth</span></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:20px" class="two-col">
+        <div><div style="font-family:var(--fh);font-size:11px;letter-spacing:.1em;color:var(--dim);margin-bottom:8px;text-transform:uppercase">Base Comp — 40,000+ kWh</div>
+        <table class="matrix-tbl"><thead><tr><th></th><th>BF1</th><th>BF2</th><th>BF3</th><th>BF4</th></tr></thead><tbody><tr><td>40k+ kWh</td><td>$375</td><td>$310</td><td>$275</td><td>$240</td></tr></tbody></table></div>
+        <div><div style="font-family:var(--fh);font-size:11px;letter-spacing:.1em;color:var(--dim);margin-bottom:8px;text-transform:uppercase">Base Comp — Below 40,000 kWh</div>
+        <table class="matrix-tbl"><thead><tr><th></th><th>BF1</th><th>BF2</th><th>BF3</th><th>BF4</th></tr></thead><tbody><tr><td>&lt;40k kWh</td><td>$325</td><td>$275</td><td>$210</td><td>$190</td></tr></tbody></table></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:20px" class="two-col">
+        <div><div style="font-family:var(--fh);font-size:11px;letter-spacing:.1em;color:var(--dim);margin-bottom:8px;text-transform:uppercase">Term Length Bonus — 40,000+ kWh</div>
+        <table class="matrix-tbl"><thead><tr><th>Term</th><th>BF1–4</th></tr></thead><tbody><tr><td>12 Month</td><td>$0</td></tr><tr><td>24 Month</td><td>$100</td></tr><tr><td>36 Month+</td><td>$150</td></tr></tbody></table></div>
+        <div><div style="font-family:var(--fh);font-size:11px;letter-spacing:.1em;color:var(--dim);margin-bottom:8px;text-transform:uppercase">Term Length Bonus — Below 40,000 kWh</div>
+        <table class="matrix-tbl"><thead><tr><th>Term</th><th>BF1–4</th></tr></thead><tbody><tr><td>12 Month</td><td>$0</td></tr><tr><td>24 Month</td><td>$50</td></tr><tr><td>36 Month+</td><td>$100</td></tr></tbody></table></div>
+      </div>
+      <div><div style="font-family:var(--fh);font-size:11px;letter-spacing:.1em;color:var(--dim);margin-bottom:8px;text-transform:uppercase">kWh Bonus (all BF tiers)</div>
+      <table class="matrix-tbl"><thead><tr><th>Range</th><th>40-45k</th><th>45-50k</th><th>50-55k</th><th>55-60k</th><th>60-80k</th><th>80-100k</th><th>100k+</th></tr></thead><tbody><tr><td>Bonus</td><td>$25</td><td>$50</td><td>$80</td><td>$120</td><td>$180</td><td>$250</td><td>$350</td></tr></tbody></table></div>
+    </div>
+  </div>`;
+}
+
+function pointDisplayRow(c){
+  const sel = _sgSel.points.has(c.id);
+  return `<tr class="sg-row${sel?' sg-sel':''}" data-id="${c.id}"
+      onclick="pointRowClick(event,'${c.id}',this)" style="cursor:pointer">
+    <td class="sg-check"><input type="checkbox" class="row-cb" value="${c.id}" onclick="sgCheckClick(event,'points','${c.id}')" style="width:auto"${sel?' checked':''}></td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px"><strong>${esc(c.name)}</strong></td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px;color:var(--dim);font-size:12px">${esc(c.desc||'')}</td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px"><span class="badge ${c.type==='team'?'accent':'purple'}">${c.type}</span></td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px;text-align:right;font-variant-numeric:tabular-nums"><strong>${c.points.toLocaleString()}</strong></td>
+  </tr>`;
+}
+
+function pointRowClick(e, id, tr){
+  if(e.target.closest('.sg-check')) return;
+  if(tr.classList.contains('sg-row-edit')) return;
+  const c = S.categories.find(c=>c.id===id); if(!c) return;
+  tr.className = `sg-row sg-row-edit${_sgSel.points.has(id)?' sg-sel':''}`;
+  tr.onclick = null;
+  tr.innerHTML = `
+    <td class="sg-check"><input type="checkbox" class="row-cb" value="${id}" onclick="sgCheckClick(event,'points','${id}')" style="width:auto"${_sgSel.points.has(id)?' checked':''}></td>
+    <td class="sg-cell"><input class="sg-input" type="text" value="${esc(c.name)}" data-field="name" onkeydown="sgKey(event,this,'points')"></td>
+    <td class="sg-cell"><input class="sg-input" type="text" value="${esc(c.desc||'')}" data-field="desc" onkeydown="sgKey(event,this,'points')"></td>
+    <td class="sg-cell"><select class="sg-select" data-field="type" onkeydown="sgKey(event,this,'points')">
+      <option value="individual"${c.type==='individual'?' selected':''}>Individual</option>
+      <option value="team"${c.type==='team'?' selected':''}>Team</option>
+    </select></td>
+    <td class="sg-cell"><input class="sg-input" type="number" min="0" value="${c.points}" data-field="points" onkeydown="sgKey(event,this,'points')" style="text-align:right"></td>`;
+  tr.querySelector('.sg-input').focus();
+  tr.addEventListener('focusout', () => {
+    requestAnimationFrame(() => {
+      if(tr.isConnected && !tr.contains(document.activeElement)) pointRowSave(id, tr);
+    });
+  });
+}
+
+function pointRowSave(id, tr){
+  const c = S.categories.find(c=>c.id===id); if(!c) return;
+  const get = f => tr.querySelector(`[data-field="${f}"]`)?.value ?? '';
+  const name = get('name').trim();
+  if(!name){ toast('Name is required','red'); return; }
+  c.name = name; c.desc = get('desc'); c.type = get('type'); c.points = parseInt(get('points'))||0;
+  save();
+  const temp = document.createElement('tbody');
+  temp.innerHTML = pointDisplayRow(c);
+  tr.parentNode.replaceChild(temp.firstChild, tr);
+}
+
+function sysCatPtsChange(el){ const c=S.categories.find(c=>c.id===el.dataset.id); if(c){c.points=parseInt(el.value)||0;save();} }
+function weeklyPtsChange(el){ const c=S.categories.find(c=>c.id==='cat_weekly_win'); if(c){c.points=parseInt(el.value)||0;save();} }
+
+// ── Roster Tab ────────────────────────────────────────────────────────────────
+const POSITIONS = ['Entry Level','Leader','Team Lead','Assistant Director','Director','Admin'];
+const POSITION_RANK = {'Entry Level':1,'Leader':2,'Team Lead':3,'Assistant Director':4,'Director':5,'Admin':0};
+
+// System point categories — never deleted, always present
+const SYSTEM_CATS = [
+  {id:'cat_promo_rep',    name:'Promotion Award: Rep',     desc:'Auto-awarded to a rep upon official promotion to a new position',          points:50, type:'individual', system:true},
+  {id:'cat_promo_trainer',name:'Promotion Award: Trainer', desc:'Auto-awarded to the trainer when their trainee is officially promoted',     points:50, type:'individual', system:true},
+  {id:'cat_weekly_win',   name:'Weekly #1 Award',          desc:'Awarded to the top points earner at the end of each competition week',      points:50, type:'individual', system:true},
+];
+
+function ensureSystemCats(){
+  SYSTEM_CATS.forEach(sc => {
+    if(!S.categories.find(c => c.id === sc.id)) S.categories.unshift({...sc});
+  });
+}
+
+let pendingPromo = null;
+
+function renderRoster(){
+  const el = document.getElementById('tab-roster');
+  _sgSel.roster.clear();
+  const acc = {
+    team:    r => teamName(r.team)||'',
+    trainer: r => S.reps.find(x=>x.id===r.trainer)?.name||'',
+    active:  r => r.active?'Active':'Inactive',
+  };
+  const sorted = _sortArr(S.reps, 'roster', acc);
+  el.innerHTML = `
+  <div class="card">
+    <div class="card-header">
+      <h3>📋 Rep Roster</h3>
+      <span class="badge dim">${S.reps.length} reps</span>
+      <div style="flex:1"></div>
+      <button class="btn sm primary" onclick="openRepModal()">+ Add Rep</button>
+    </div>
+    <div id="rosterToolbar" class="sg-toolbar" style="display:none">
+      <span id="rosterSelCount" class="badge accent"></span>
+      <button class="btn xs danger" onclick="sgDeleteSelected('roster')">Delete Selected</button>
+      <button class="btn xs" onclick="sgCopyGrid('roster')">📋 Copy</button>
+      <button class="btn xs" onclick="sgSelectAll('roster',false)">Clear</button>
+    </div>
+    <div class="tbl-wrap"><table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr>
+        <th class="sg-check"><input type="checkbox" id="rosterSelectAll" onchange="sgSelectAll('roster',this.checked)" style="width:auto"></th>
+        ${_th('roster','name','Name')}
+        ${_th('roster','position','Position')}
+        ${_th('roster','team','Team')}
+        ${_th('roster','trainer','Trainer')}
+        ${_th('roster','active','Status')}
+      </tr></thead>
+      <tbody id="rosterBody">
+        ${sorted.map(r=>rosterDisplayRow(r)).join('')}
+        ${!S.reps.length?`<tr><td colspan="6" style="text-align:center;color:var(--dim);padding:32px">No reps — click + Add Rep to get started</td></tr>`:''}
+      </tbody>
+    </table></div>
+    <div style="padding:6px 14px;font-size:11px;color:var(--dim)">💡 Click any row to edit inline · Tab/Enter to navigate · click away to save</div>
+  </div>`;
+}
+
+function _posBadge(pos){ return {Director:'gold','Assistant Director':'gold','Team Lead':'accent',Leader:'green',Admin:'purple'}[pos]||'dim'; }
+
+function rosterDisplayRow(r){
+  const trainer = r.trainer ? S.reps.find(t=>t.id===r.trainer) : null;
+  const sel = _sgSel.roster.has(r.id);
+  return `<tr class="sg-row${sel?' sg-sel':''}" data-id="${r.id}"
+      onclick="rosterRowClick(event,'${r.id}',this)" style="cursor:pointer">
+    <td class="sg-check"><input type="checkbox" class="row-cb" value="${r.id}" onclick="sgCheckClick(event,'roster','${r.id}')" style="width:auto"${sel?' checked':''}></td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px"><strong>${esc(r.name)}</strong></td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px"><span class="badge ${_posBadge(r.position)}">${esc(r.position||'Entry Level')}</span></td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px">${teamName(r.team)?`<span class="badge dim">${esc(teamName(r.team))}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px">${trainer?esc(trainer.name):'<span style="color:var(--dim)">—</span>'}</td>
+    <td style="border-bottom:1px solid var(--border);padding:8px 12px"><span class="badge ${r.active?'green':'red'}">${r.active?'Active':'Inactive'}</span></td>
+  </tr>`;
+}
+
+function rosterRowClick(e, id, tr){
+  if(e.target.closest('.sg-check')) return;
+  if(tr.classList.contains('sg-row-edit')) return;
+  const r = S.reps.find(r=>r.id===id); if(!r) return;
+  const posOpts = POSITIONS.map(p=>`<option value="${p}"${r.position===p?' selected':''}>${p}</option>`).join('');
+  const tmOpts  = `<option value=""${!r.team?' selected':''}>— No Team —</option>`+S.teams.map(t=>`<option value="${t.id}"${r.team===t.id?' selected':''}>${esc(t.name)}</option>`).join('');
+  const trOpts  = `<option value=""${!r.trainer?' selected':''}>— None —</option>`+S.reps.filter(x=>x.id!==r.id).map(x=>`<option value="${x.id}"${r.trainer===x.id?' selected':''}>${esc(x.name)}</option>`).join('');
+  tr.className = `sg-row sg-row-edit${_sgSel.roster.has(id)?' sg-sel':''}`;
+  tr.onclick = null;
+  tr.innerHTML = `
+    <td class="sg-check"><input type="checkbox" class="row-cb" value="${id}" onclick="sgCheckClick(event,'roster','${id}')" style="width:auto"${_sgSel.roster.has(id)?' checked':''}></td>
+    <td class="sg-cell"><input class="sg-input" type="text" value="${esc(r.name)}" data-field="name" onkeydown="sgKey(event,this,'roster')"></td>
+    <td class="sg-cell"><select class="sg-select" data-field="position" onkeydown="sgKey(event,this,'roster')">${posOpts}</select></td>
+    <td class="sg-cell"><select class="sg-select" data-field="team" onkeydown="sgKey(event,this,'roster')">${tmOpts}</select></td>
+    <td class="sg-cell"><select class="sg-select" data-field="trainer" onkeydown="sgKey(event,this,'roster')">${trOpts}</select></td>
+    <td class="sg-cell"><select class="sg-select" data-field="active" onkeydown="sgKey(event,this,'roster')">
+      <option value="true"${r.active?' selected':''}>Active</option>
+      <option value="false"${!r.active?' selected':''}>Inactive</option>
+    </select></td>`;
+  tr.querySelector('.sg-input').focus();
+  tr.addEventListener('focusout', () => {
+    requestAnimationFrame(() => {
+      if(tr.isConnected && !tr.contains(document.activeElement)) rosterRowSave(id, tr);
+    });
+  });
+}
+
+function rosterRowSave(id, tr){
+  const rep = S.reps.find(r=>r.id===id); if(!rep) return;
+  const get = f => tr.querySelector(`[data-field="${f}"]`)?.value ?? '';
+  const name     = get('name').trim();
+  const position = get('position');
+  const team     = get('team');
+  const trainer  = get('trainer');
+  const active   = get('active') === 'true';
+  if(!name){ toast('Name is required','red'); return; }
+  const oldPos = rep.position||'Entry Level';
+  const isPromo = POSITION_RANK[position]>0 && POSITION_RANK[position]>(POSITION_RANK[oldPos]||0);
+  rep.name=name; rep.position=position; rep.team=team; rep.trainer=trainer; rep.active=active;
+  save();
+  const temp = document.createElement('tbody');
+  temp.innerHTML = rosterDisplayRow(rep);
+  tr.parentNode.replaceChild(temp.firstChild, tr);
+  if(isPromo){
+    const trainerRep=rep.trainer?S.reps.find(t=>t.id===rep.trainer):null;
+    const repCat=S.categories.find(c=>c.id==='cat_promo_rep'), trnCat=S.categories.find(c=>c.id==='cat_promo_trainer');
+    pendingPromo={repId:rep.id,repName:rep.name,fromPos:oldPos,toPos:position,trainerRep,repPts:repCat?.points||0,trainerPts:trnCat?.points||0};
+    openPromoModal();
+  }
+}
+
+// ── Settings Tab ──────────────────────────────────────────────────────────────
+function renderSettings(){
+  const el = document.getElementById('tab-settings');
+  el.innerHTML = `
+  <div style="max-width:600px">
+    <div class="card">
+      <div class="card-header"><h3>⚙ Competition Config</h3></div>
+      <div class="card-body">
+        <div class="form-row"><div><label>Competition Name</label><input type="text" id="cfgName" value="${esc(S.config.name)}"></div></div>
+        <div class="form-row c2">
+          <div><label>Quarter Label</label><input type="text" id="cfgQuarter" value="${esc(S.config.quarter)}"></div>
+          <div></div>
+        </div>
+        <div class="form-row c2">
+          <div><label>Start Date</label><input type="date" id="cfgStart" value="${S.config.startDate}"></div>
+          <div><label>End Date</label><input type="date" id="cfgEnd" value="${S.config.endDate}"></div>
+        </div>
+        <button class="btn primary" onclick="saveConfig()">Save Config</button>
+      </div>
+    </div>
+    <div style="padding:16px 0;color:var(--dim);font-size:13px;display:flex;gap:20px">
+      <span>👤 Manage reps → <strong style="color:var(--text);cursor:pointer" onclick="switchTab('roster')">Roster</strong></span>
+      <span>🎯 Manage point categories → <strong style="color:var(--text);cursor:pointer" onclick="switchTab('points')">Points</strong></span>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:600px">
+    <div class="card-header"><h3>🧭 App Tour</h3></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:14px">Walk through a guided tour of every feature in the app. Takes about 60 seconds.</p>
+      <button class="btn primary" onclick="startTour()">▶ Start Tour</button>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:600px">
+    <div class="card-header"><h3>💾 Data Backup</h3></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:14px">Export saves all reps, events, teams, and points to a JSON file. Import restores from a previous export. <strong style="color:var(--text)">Important:</strong> browser storage clears with cache — export regularly if this is hosted.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn primary" onclick="exportData()">⬇ Export All Data</button>
+        <label class="btn" style="cursor:pointer">⬆ Import Backup <input type="file" accept=".json" style="display:none" onchange="importData(this.files[0]);this.value=''"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:720px">
+    <div class="card-header">
+      <h3>🏆 Teams</h3>
+      <span class="badge dim">${S.teams.length} teams</span>
+      <button class="btn sm primary" onclick="openTeamModal()">+ Add Team</button>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Team Name</th><th>Leader</th><th>Members</th><th></th></tr></thead>
+        <tbody>
+          ${S.teams.map(t => {
+            const leader = t.leaderId ? S.reps.find(r=>r.id===t.leaderId) : null;
+            const cnt = S.reps.filter(r=>r.team===t.id).length;
+            return `<tr>
+              <td><strong>${esc(t.name)}</strong></td>
+              <td>${leader?esc(leader.name):'<span style="color:var(--dim)">—</span>'}</td>
+              <td><span class="badge dim">${cnt} rep${cnt!==1?'s':''}</span></td>
+              <td style="display:flex;gap:4px">
+                <button class="btn xs" onclick="openTeamModal('${t.id}')">Edit</button>
+                <button class="btn xs danger" onclick="deleteTeam('${t.id}')">✕</button>
+              </td>
+            </tr>`;
+          }).join('')}
+          ${!S.teams.length?'<tr><td colspan="4" style="text-align:center;color:var(--dim);padding:24px">No teams yet — add a team to enable team assignments on the Roster</td></tr>':''}
+        </tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+
+function openTeamModal(id=null){
+  document.getElementById('teamModalTitle').textContent = id ? 'Edit Team' : 'Add Team';
+  document.getElementById('tmEditId').value = id || '';
+  const leaderSel = document.getElementById('tmLeader');
+  leaderSel.innerHTML = '<option value="">— None —</option>' +
+    S.reps.filter(r=>r.active).map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('');
+  if(id){
+    const t = S.teams.find(t=>t.id===id);
+    document.getElementById('tmName').value    = t.name;
+    document.getElementById('tmLeader').value  = t.leaderId || '';
+  } else {
+    document.getElementById('tmName').value    = '';
+    document.getElementById('tmLeader').value  = '';
+  }
+  document.getElementById('teamModal').classList.add('open');
+}
+
+function saveTeam(){
+  const name = document.getElementById('tmName').value.trim();
+  if(!name){ toast('Team name is required','red'); return; }
+  const id       = document.getElementById('tmEditId').value;
+  const leaderId = document.getElementById('tmLeader').value;
+  if(id){
+    const t = S.teams.find(t=>t.id===id);
+    t.name=name; t.leaderId=leaderId;
+  } else {
+    S.teams.push({id:uid(), name, leaderId});
+  }
+  save(); closeModal('teamModal');
+  const t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(t);
+  toast(id ? 'Team updated' : 'Team added');
+}
+
+function deleteTeam(id){
+  if(!confirm('Delete this team? Reps assigned to it will be unassigned.')) return;
+  S.reps.forEach(r=>{ if(r.team===id) r.team=''; });
+  S.teams = S.teams.filter(t=>t.id!==id);
+  save();
+  const t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(t);
+  toast('Team removed');
+}
+
+function switchTab(t){ switchActiveTab(t); }
+
+// ── CRUD ──────────────────────────────────────────────────────────────────────
+function saveConfig(){
+  S.config.name       = document.getElementById('cfgName').value.trim() || S.config.name;
+  S.config.quarter    = document.getElementById('cfgQuarter').value.trim() || S.config.quarter;
+  S.config.startDate  = document.getElementById('cfgStart').value || S.config.startDate;
+  S.config.endDate    = document.getElementById('cfgEnd').value || S.config.endDate;
+  save();
+  document.getElementById('seasonBadge').textContent = S.config.quarter + ' Season';
+  toast('Config saved');
+}
+
+function openRepModal(id=null){
+  document.getElementById('repModalTitle').textContent = id ? 'Edit Rep' : 'Add Rep';
+  document.getElementById('repEditId').value = id || '';
+  // Populate team dropdown
+  const teamSel = document.getElementById('repTeam');
+  teamSel.innerHTML = '<option value="">— No Team —</option>' +
+    S.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  // Populate trainer dropdown from all reps except self
+  const trainerSel = document.getElementById('repTrainer');
+  trainerSel.innerHTML = '<option value="">— None —</option>' +
+    S.reps.filter(r => r.id !== id).map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join('');
+  if(id){
+    const r = S.reps.find(r=>r.id===id);
+    document.getElementById('repName').value      = r.name;
+    document.getElementById('repPosition').value  = r.position || 'Entry Level';
+    document.getElementById('repTeam').value      = r.team || '';
+    document.getElementById('repTrainer').value   = r.trainer || '';
+    document.getElementById('repStatus').value    = r.active ? 'active' : 'inactive';
+  } else {
+    document.getElementById('repName').value      = '';
+    document.getElementById('repPosition').value  = 'Entry Level';
+    document.getElementById('repTeam').value      = '';
+    document.getElementById('repTrainer').value   = '';
+    document.getElementById('repStatus').value    = 'active';
+  }
+  document.getElementById('repModal').classList.add('open');
+}
+
+function saveRep(){
+  const name = document.getElementById('repName').value.trim();
+  if(!name){ toast('Name is required','red'); return; }
+  const id       = document.getElementById('repEditId').value;
+  const position = document.getElementById('repPosition').value;
+  const team     = document.getElementById('repTeam').value;
+  const trainer  = document.getElementById('repTrainer').value;
+  const active   = document.getElementById('repStatus').value === 'active';
+
+  if(id){
+    const r = S.reps.find(r=>r.id===id);
+    const oldPos = r.position || 'Entry Level';
+    const oldRank = POSITION_RANK[oldPos] || 0;
+    const newRank = POSITION_RANK[position] || 0;
+    const isPromotion = newRank > 0 && newRank > oldRank;
+
+    // Apply rep changes immediately
+    r.name=name; r.position=position; r.team=team; r.trainer=trainer; r.active=active;
+    save(); closeModal('repModal');
+
+    if(isPromotion){
+      const trainerRep = r.trainer ? S.reps.find(t=>t.id===r.trainer) : null;
+      const repCat  = S.categories.find(c=>c.id==='cat_promo_rep');
+      const trnCat  = S.categories.find(c=>c.id==='cat_promo_trainer');
+      pendingPromo = {repId:r.id, repName:r.name, fromPos:oldPos, toPos:position, trainerRep, repPts:repCat?.points||0, trainerPts:trnCat?.points||0};
+      openPromoModal();
+      return;
+    }
+  } else {
+    S.reps.push({id:uid(), name, position, team, trainer, active});
+    save(); closeModal('repModal');
+  }
+
+  const t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(t);
+  toast(id ? 'Rep updated' : 'Rep added');
+}
+
+function openPromoModal(){
+  if(!pendingPromo) return;
+  const {repName, fromPos, toPos, trainerRep, repPts, trainerPts} = pendingPromo;
+  const trainerLine = trainerRep
+    ? `<div style="margin-top:8px;padding:10px 14px;background:var(--elev2);border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <span style="color:var(--dim);font-size:11px;font-family:var(--fh);letter-spacing:.06em;text-transform:uppercase">Trainer</span><br>
+        <strong>${esc(trainerRep.name)}</strong> will receive <strong style="color:var(--green)">+${trainerPts.toLocaleString()} pts</strong>
+       </div>`
+    : `<div style="margin-top:8px;padding:10px 14px;background:var(--elev2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--dim)">No trainer assigned — trainer points will not be awarded.</div>`;
+  document.getElementById('promoBody').innerHTML = `
+    <div style="padding:16px;background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(245,166,35,.04));border:1px solid rgba(255,215,0,.25);border-radius:8px;margin-bottom:16px">
+      <div style="font-family:var(--fh);font-size:22px;font-weight:700;margin-bottom:4px">${esc(repName)}</div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+        <span class="badge dim">${esc(fromPos)}</span>
+        <span style="color:var(--gold)">→</span>
+        <span class="badge gold">${esc(toPos)}</span>
+      </div>
+      <div style="margin-top:12px;font-size:14px;color:var(--green);font-family:var(--fh);font-weight:600">+${repPts.toLocaleString()} pts to rep</div>
+    </div>
+    ${trainerLine}
+    <p style="margin-top:14px;font-size:12px;color:var(--dim)">Was this an official promotion? Selecting <strong>Yes</strong> will log point events for today.</p>`;
+  document.getElementById('promoModal').classList.add('open');
+}
+
+function confirmPromotion(){
+  if(!pendingPromo) return;
+  const {repId, repName, toPos, trainerRep, repPts, trainerPts} = pendingPromo;
+  const today = todayStr();
+  S.events.push({id:uid(), date:today, categoryId:'cat_promo_rep', points:repPts, repIds:[repId], note:`Promoted to ${toPos}`});
+  if(trainerRep && trainerPts > 0){
+    S.events.push({id:uid(), date:today, categoryId:'cat_promo_trainer', points:trainerPts, repIds:[trainerRep.id], note:`Trainee ${repName} promoted to ${toPos}`});
+  }
+  save();
+  pendingPromo = null;
+  closeModal('promoModal');
+  const t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(t);
+  toast(`🏅 Promotion points awarded to ${repName}${trainerRep?' + '+trainerRep.name:''}`, 'green');
+}
+
+function declinePromotion(){
+  pendingPromo = null;
+  closeModal('promoModal');
+  const t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(t);
+  toast('Role updated — no points awarded');
+}
+
+function deleteRep(id){
+  if(!confirm('Delete this rep? Their point events will remain in the log.')) return;
+  S.reps = S.reps.filter(r => r.id !== id);
+  save();
+  const t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(t);
+  toast('Rep removed');
+}
+
+function openCatModal(id=null){
+  document.getElementById('catModalTitle').textContent = id ? 'Edit Category' : 'Add Category';
+  document.getElementById('catEditId').value = id || '';
+  if(id){
+    const c = S.categories.find(c=>c.id===id);
+    document.getElementById('catName').value   = c.name;
+    document.getElementById('catDesc').value   = c.desc || '';
+    document.getElementById('catPoints').value = c.points;
+    document.getElementById('catType').value   = c.type;
+  } else {
+    document.getElementById('catName').value   = '';
+    document.getElementById('catDesc').value   = '';
+    document.getElementById('catPoints').value = '';
+    document.getElementById('catType').value   = 'individual';
+  }
+  document.getElementById('catModal').classList.add('open');
+}
+
+function saveCat(){
+  const name = document.getElementById('catName').value.trim();
+  if(!name){ toast('Name is required','red'); return; }
+  const id     = document.getElementById('catEditId').value;
+  const desc   = document.getElementById('catDesc').value.trim();
+  const points = parseInt(document.getElementById('catPoints').value) || 0;
+  const type   = document.getElementById('catType').value;
+  if(id){
+    const c = S.categories.find(c=>c.id===id);
+    c.name=name; c.desc=desc; c.points=points; c.type=type;
+  } else {
+    S.categories.push({id:uid(), name, desc, points, type});
+  }
+  save(); closeModal('catModal');
+  const _t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(_t);
+  toast(id ? 'Category updated' : 'Category added');
+}
+
+function deleteCat(id){
+  if(!confirm('Delete this category?')) return;
+  S.categories = S.categories.filter(c => c.id !== id);
+  save();
+  const _t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(_t);
+  toast('Category removed');
+}
+
+function deleteEvent(id){
+  if(!confirm('Delete this event?')) return;
+  S.events = S.events.filter(e => e.id !== id);
+  save();
+  const t = document.querySelector('.tab-btn.active').dataset.tab;
+  renderTab(t);
+  toast('Event deleted');
+}
+
+// ── Award Points Modal ────────────────────────────────────────────────────────
+function selectTeamReps(){
+  const tid = document.getElementById('awdTeamSelect').value;
+  if(!tid) return;
+  const memberIds = new Set(teamMembers(tid).map(r=>r.id));
+  document.querySelectorAll('#awdRepList input[type=checkbox]').forEach(cb=>{
+    cb.checked = memberIds.has(cb.value);
+  });
+}
+
+function openAwardModal(){
+  document.getElementById('awdDate').value = todayStr();
+  document.getElementById('awdNote').value = '';
+  // Populate team quick-select
+  const awdTeamSel = document.getElementById('awdTeamSelect');
+  awdTeamSel.innerHTML = '<option value="">— Select a team to check all members —</option>' +
+    S.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  const sel = document.getElementById('awdCategory');
+  sel.innerHTML = S.categories.map(c => `<option value="${c.id}">${esc(c.name)} (${c.points} pts)</option>`).join('');
+  onCatChange();
+  const repList = document.getElementById('awdRepList');
+  const active = S.reps.filter(r => r.active);
+  if(!active.length){
+    repList.innerHTML = `<div style="color:var(--dim);font-size:12px">No active reps. Add reps in Settings first.</div>`;
+  } else {
+    repList.innerHTML = active.map(r => `
+      <label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font-size:13px">
+        <input type="checkbox" value="${r.id}" style="width:auto">
+        ${esc(r.name)}${teamName(r.team)?` <span class="badge dim" style="font-size:9px">${esc(teamName(r.team))}</span>`:''}
+      </label>`).join('');
+  }
+  document.getElementById('awardModal').classList.add('open');
+}
+
+function onCatChange(){
+  const id = document.getElementById('awdCategory').value;
+  const cat = S.categories.find(c => c.id === id);
+  if(cat) document.getElementById('awdPoints').value = cat.points;
+}
+
+function submitAward(){
+  const date       = document.getElementById('awdDate').value;
+  const categoryId = document.getElementById('awdCategory').value;
+  const points     = parseInt(document.getElementById('awdPoints').value) || 0;
+  const note       = document.getElementById('awdNote').value.trim();
+  const repIds     = [...document.querySelectorAll('#awdRepList input:checked')].map(i => i.value);
+  if(!date)         { toast('Select a date','red'); return; }
+  if(!categoryId)   { toast('Select a category','red'); return; }
+  if(!repIds.length){ toast('Select at least one rep','red'); return; }
+  if(points <= 0)   { toast('Points must be > 0','red'); return; }
+  S.events.push({id:uid(), date, categoryId, points, repIds, note});
+  save(); closeModal('awardModal');
+  renderTab(document.querySelector('.tab-btn.active').dataset.tab);
+  toast(`+${points.toLocaleString()} pts awarded to ${repIds.length} rep${repIds.length>1?'s':''} ⚡`);
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let _tt;
+function toast(msg, type=''){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.borderColor = type==='red' ? 'var(--red)' : 'var(--border)';
+  el.style.opacity = '1';
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.style.opacity='0', 2800);
+}
+
+// ── Edit Mode ─────────────────────────────────────────────────────────────────
+function toggleEditMode(){
+  _editMode = !_editMode;
+  const btn = document.getElementById('editModeBtn');
+  btn.textContent = _editMode ? '✅ Done Editing' : '✏ Edit Layout';
+  btn.style.cssText = _editMode ? 'font-size:12px;background:rgba(245,166,35,.12);border-color:var(--accent);color:var(--accent)' : 'font-size:12px';
+  document.getElementById('editModeBar').style.display = _editMode ? 'flex' : 'none';
+  renderTabNav();
+  renderTab(_activeTab);
+}
+
+function renameTab(id){
+  const t = lTab(id);
+  const val = prompt(`Rename tab "${t.label}" to:`, t.label);
+  if(val && val.trim()) { t.label = val.trim(); save(); renderTabNav(); }
+}
+
+function toggleTabVisible(id){
+  const t = lTab(id);
+  t.visible = !t.visible;
+  save(); renderTabNav();
+  if(!t.visible && _activeTab === id) switchActiveTab('arena');
+}
+
+function renameCard(id){
+  const c = lCard(id);
+  const val = prompt(`Rename card "${c.label}" to:`, c.label);
+  if(val && val.trim()) { c.label = val.trim(); save(); renderArena(); }
+}
+
+function toggleCardVisible(id){
+  const c = lCard(id);
+  c.visible = c.visible === false ? true : false;
+  save(); renderArena();
+}
+
+// ── Arena Card Drag-and-Drop ──────────────────────────────────────────────────
+function cardDragStart(e, id){
+  _dragCardId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', id);
+  // Fade after browser captures the drag ghost
+  requestAnimationFrame(()=>{
+    const el = document.querySelector(`[data-card-id="${id}"]`);
+    if(el) el.style.opacity = '.35';
+  });
+}
+
+function cardDragOver(e, id){
+  e.preventDefault(); // must call to allow drop
+  e.dataTransfer.dropEffect = 'move';
+  if(!_dragCardId || _dragCardId === id) return;
+  document.querySelectorAll('[data-card-id]').forEach(el => el.classList.remove('drag-target'));
+  const target = document.querySelector(`[data-card-id="${id}"]`);
+  if(target) target.classList.add('drag-target');
+}
+
+function cardDrop(e, targetId){
+  e.preventDefault();
+  const fromId = _dragCardId || e.dataTransfer.getData('text/plain');
+  if(!fromId || fromId === targetId) { cardDragEnd(); return; }
+  const cards = S.layout.arenaCards;
+  const fromIdx = cards.findIndex(c=>c.id===fromId);
+  const toIdx   = cards.findIndex(c=>c.id===targetId);
+  if(fromIdx < 0 || toIdx < 0) { cardDragEnd(); return; }
+  const [moved] = cards.splice(fromIdx, 1);
+  cards.splice(toIdx, 0, moved);
+  _dragCardId = null;
+  save();
+  renderArena();
+}
+
+function cardDragEnd(){
+  _dragCardId = null;
+  document.querySelectorAll('[data-card-id]').forEach(el => {
+    el.style.opacity = '';
+    el.classList.remove('drag-target');
+  });
+}
+
+// ── Export / Import / Send to CoBo ───────────────────────────────────────────
+function _dl(content, filename, type='application/json'){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function exportData(){
+  _dl(JSON.stringify(S, null, 2), `Arena26-backup-${todayStr()}.json`);
+  toast('Data exported — keep this file safe');
+}
+
+function importData(file){
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if(!d.config || !d.reps) { toast('Invalid backup file','red'); return; }
+      Object.assign(S, d);
+      ensureSystemCats(); ensureLayout(); save();
+      renderTabNav(); renderTab(_activeTab);
+      toast('Data imported successfully');
+    } catch(ex) { toast('Could not parse file','red'); }
+  };
+  r.readAsText(file);
+}
+
+function sendToCobo(){
+  const payload = {
+    _note: 'Highline Arena 26 — layout & config snapshot. Send to CoBo on Slack to bake in changes.',
+    _date: todayStr(),
+    config: S.config,
+    layout: S.layout,
+  };
+  _dl(JSON.stringify(payload, null, 2), 'Send to CoBo on Slack!.json');
+  toast('📩 File ready — send it to CoBo on Slack!');
+}
+
+// ── Weekly #1 Award ───────────────────────────────────────────────────────────
+function weekMonday(dateStr){
+  const d = new Date(dateStr + 'T12:00:00'), day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  return d.toISOString().slice(0,10);
+}
+function weekSunday(mondayStr){
+  const d = new Date(mondayStr + 'T12:00:00');
+  d.setDate(d.getDate() + 6);
+  return d.toISOString().slice(0,10);
+}
+function fmtWeekRange(mon){
+  const sun = weekSunday(mon);
+  return `${mon} – ${sun}`;
+}
+
+let pendingWeeklyAward = null;
+
+function checkWeeklyAward(){
+  if(!S.processedWeeks) S.processedWeeks = [];
+  const today = todayStr();
+  if(today < S.config.startDate || today > S.config.endDate) return;
+
+  const thisMonday = weekMonday(today);
+  const prevMon = new Date(thisMonday + 'T12:00:00');
+  prevMon.setDate(prevMon.getDate() - 7);
+  const prevMonStr = prevMon.toISOString().slice(0,10);
+
+  if(prevMonStr < S.config.startDate) return;
+  if(S.processedWeeks.find(w => w.monday === prevMonStr)) return;
+
+  const prevSunStr = weekSunday(prevMonStr);
+  const lb = leaderboard(prevMonStr, prevSunStr).filter(r => r.pts > 0);
+
+  if(!lb.length){
+    S.processedWeeks.push({monday:prevMonStr, winnerId:null, winnerPts:0, awarded:false, skipped:true});
+    save(); return;
+  }
+
+  const cat = S.categories.find(c => c.id === 'cat_weekly_win');
+  pendingWeeklyAward = {monday:prevMonStr, sunday:prevSunStr, winner:lb[0], awardPts:cat?.points||200};
+  setTimeout(openWeeklyAwardModal, 500);
+}
+
+function openWeeklyAwardModal(){
+  if(!pendingWeeklyAward) return;
+  const {monday, sunday, winner, awardPts} = pendingWeeklyAward;
+  document.getElementById('weeklyAwardBody').innerHTML = `
+    <div style="padding:16px;background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(245,166,35,.04));border:1px solid rgba(255,215,0,.25);border-radius:8px;margin-bottom:18px">
+      <div style="font-size:10px;font-family:var(--fh);letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin-bottom:10px">Week of ${monday} – ${sunday}</div>
+      <div style="font-family:var(--fh);font-size:24px;font-weight:700;margin-bottom:4px">🥇 ${esc(winner.name)}</div>
+      <div style="font-size:13px;color:var(--dim)">${winner.pts.toLocaleString()} pts earned this week</div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>Points to Award</label>
+        <input type="number" id="wkAwardPts" value="${awardPts}" min="0" style="max-width:160px">
+        <div style="font-size:11px;color:var(--dim);margin-top:4px">Adjust before confirming if needed</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--dim);margin-top:10px">Award points to <strong style="color:var(--text)">${esc(winner.name)}</strong> and mark this week as complete. Selecting <strong>Skip</strong> marks the week done without awarding.</p>`;
+  document.getElementById('weeklyAwardModal').classList.add('open');
+}
+
+function confirmWeeklyAward(){
+  if(!pendingWeeklyAward) return;
+  const pts = parseInt(document.getElementById('wkAwardPts').value) || 0;
+  const {monday, sunday, winner} = pendingWeeklyAward;
+  S.events.push({id:uid(), date:sunday, categoryId:'cat_weekly_win', points:pts, repIds:[winner.id], note:`Weekly #1 — week of ${monday}`});
+  S.processedWeeks.push({monday, winnerId:winner.id, winnerPts:winner.pts, awarded:true, awardedPts:pts});
+  save(); pendingWeeklyAward = null;
+  closeModal('weeklyAwardModal');
+  renderTab(document.querySelector('.tab-btn.active').dataset.tab);
+  toast(`🏆 +${pts.toLocaleString()} pts awarded to ${winner.name}`);
+}
+
+function skipWeeklyAward(){
+  if(!pendingWeeklyAward) return;
+  const {monday, winner} = pendingWeeklyAward;
+  S.processedWeeks.push({monday, winnerId:winner.id, winnerPts:winner.pts, awarded:false});
+  save(); pendingWeeklyAward = null;
+  closeModal('weeklyAwardModal');
+  toast('Weekly award skipped for this week');
+}
+
+// ── Tour ──────────────────────────────────────────────────────────────────────
+const TOUR_STEPS = [
+  {
+    title: '⚡ Welcome to Highline: Arena 26',
+    body: 'Your quarterly sales competition tracker. Reps earn points, climb the standings, and compete for daily, weekly, monthly, and season rewards.<br><br>This quick tour takes about 60 seconds.',
+    target: null,
+  },
+  {
+    title: '🏟 The Arena',
+    body: 'Your main dashboard. Shows the season podium, period leaders, and full standings. Click any rep row to jump into their detail view.',
+    target: '[data-tab="arena"]',
+  },
+  {
+    title: '⚡ Awarding Points',
+    body: 'Hit this any time to log a point event. Pick a date, choose a category (TX Grid values are pre-loaded), check off one or more reps, and confirm. Team events check everyone at once with the Quick-Select Team dropdown.',
+    target: '.btn-award',
+  },
+  {
+    title: '📋 Scoreboard',
+    body: 'Compact top-10 leaderboards for Season, Month, Week, and Today — all visible on one screen. Hit <strong>Complete Lists</strong> for full sortable tables.',
+    target: '[data-tab="scoreboard"]',
+  },
+  {
+    title: '👤 Rep Detail',
+    body: 'Pick any rep from the sidebar to see their full profile — rank, points by period, category breakdown, and every event in their history.',
+    target: '[data-tab="reps"]',
+  },
+  {
+    title: '📋 Roster',
+    body: 'Click any row to edit inline — name, position, team, trainer, status. Changing a rep\'s position to a higher rank automatically triggers the <strong>Promotion Award</strong> popup.',
+    target: '[data-tab="roster"]',
+  },
+  {
+    title: '🎯 Points',
+    body: 'All point categories in one place. TX Grid values are pre-loaded and editable. The <strong>Weekly #1 Award</strong> fires automatically each Monday. The Promotion Awards are also configured here.',
+    target: '[data-tab="points"]',
+  },
+  {
+    title: '📜 Log',
+    body: 'Every point event ever recorded, sortable by date, rep, category, or points. You can delete any event from here if a correction is needed.',
+    target: '[data-tab="log"]',
+  },
+  {
+    title: '✏ Edit Layout',
+    body: 'Customize your Arena dashboard. Use <strong>↑ ↓</strong> to reorder cards, the width picker <strong>■□□□</strong> to resize them, and <strong>👁/🚫</strong> to show or hide. Hit <strong>📩 Send to CoBo on Slack!</strong> to share your layout preferences.',
+    target: '#editModeBtn',
+  },
+  {
+    title: '⚙ Settings & Backup',
+    body: 'Set your competition name, quarter label, and dates here.<br><br><strong>Important:</strong> use <em>Export All Data</em> regularly. This app runs in your browser — exporting a backup protects against cache clears or switching devices.',
+    target: '[data-tab="settings"]',
+  },
+  {
+    title: '🏆 You\'re all set!',
+    body: 'Head to <strong>Roster</strong> to confirm your reps, then <strong>Points</strong> to check your categories. Award your first points and watch the leaderboard come to life.<br><br>You can replay this tour anytime from the Settings tab.',
+    target: null,
+  },
+];
+
+let _tourStep = 0;
+
+function startTour(){
+  _tourStep = 0;
+  _renderTourStep();
+}
+
+function _renderTourStep(){
+  // Clean up previous step
+  document.querySelector('.tour-overlay')?.remove();
+  document.querySelector('.tour-card')?.remove();
+
+  const step = TOUR_STEPS[_tourStep];
+  const total = TOUR_STEPS.length;
+  const target = step.target ? document.querySelector(step.target) : null;
+
+  // Build overlay with SVG spotlight cutout
+  const overlay = document.createElement('div');
+  overlay.className = 'tour-overlay';
+
+  if(target){
+    const r = target.getBoundingClientRect();
+    const pad = 8, vw = window.innerWidth, vh = window.innerHeight;
+    const x = Math.max(0, r.left - pad), y = Math.max(0, r.top - pad);
+    const w = r.width + pad*2, h = r.height + pad*2;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${vw}' height='${vh}'>
+      <defs><mask id='hole'>
+        <rect width='${vw}' height='${vh}' fill='white'/>
+        <rect x='${x}' y='${y}' width='${w}' height='${h}' rx='7' fill='black'/>
+      </mask></defs>
+      <rect width='${vw}' height='${vh}' fill='rgba(0,0,0,0.75)' mask='url(%23hole)'/>
+      <rect x='${x}' y='${y}' width='${w}' height='${h}' rx='7' fill='none' stroke='rgba(245,166,35,0.8)' stroke-width='2'/>
+    </svg>`;
+    overlay.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    overlay.style.backgroundSize = '100% 100%';
+  } else {
+    overlay.style.background = 'rgba(0,0,0,0.75)';
+  }
+
+  overlay.addEventListener('click', () => {
+    if(_tourStep < total-1) tourNext(); else endTour();
+  });
+
+  // Build tour card
+  const card = document.createElement('div');
+  card.className = 'tour-card';
+  card.addEventListener('click', e => e.stopPropagation());
+
+  // Position card near target
+  let cardTop = null, cardLeft = null, cardBottom = null, cardTransform = '';
+  if(target){
+    const r = target.getBoundingClientRect();
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const cw = Math.min(400, vw - 32), ch = 220;
+    if(r.bottom + ch + 20 < vh){
+      cardTop = r.bottom + 16; cardLeft = Math.min(Math.max(r.left, 16), vw - cw - 16);
+    } else {
+      cardBottom = vh - r.top + 16; cardLeft = Math.min(Math.max(r.left, 16), vw - cw - 16);
+    }
+  } else {
+    cardTop = 0; cardLeft = 0; cardTransform = 'translate(calc(50vw - 50%), calc(50vh - 50%))';
+  }
+
+  card.style.cssText = [
+    cardTop    !== null ? `top:${cardTop}px`       : '',
+    cardBottom !== null ? `bottom:${cardBottom}px` : '',
+    cardLeft   !== null ? `left:${cardLeft}px`     : '',
+    cardTransform       ? `transform:${cardTransform}` : '',
+  ].filter(Boolean).join(';');
+
+  const dots = TOUR_STEPS.map((_,i) =>
+    `<span class="tour-dot" style="background:${i===_tourStep?'var(--accent)':'var(--border)'}"></span>`
+  ).join('');
+
+  card.innerHTML = `
+    <div style="font-size:10px;color:var(--accent);font-family:var(--fh);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
+      Step ${_tourStep+1} of ${total}
+    </div>
+    <div style="font-family:var(--fh);font-size:19px;font-weight:700;margin-bottom:10px;line-height:1.2">${step.title}</div>
+    <p style="font-size:13px;line-height:1.65;color:var(--dim);margin-bottom:18px">${step.body}</p>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="btn sm" onclick="endTour()" style="color:var(--dim);font-size:11px">Skip</button>
+      <div style="flex:1;display:flex;gap:4px;justify-content:center">${dots}</div>
+      <div style="display:flex;gap:6px">
+        ${_tourStep > 0 ? `<button class="btn sm" onclick="tourPrev()">← Back</button>` : ''}
+        ${_tourStep < total-1
+          ? `<button class="btn primary sm" onclick="tourNext()">Next →</button>`
+          : `<button class="btn primary sm" onclick="endTour()">🏁 Let's Go!</button>`}
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(card);
+}
+
+function tourNext(){ _tourStep = Math.min(_tourStep+1, TOUR_STEPS.length-1); _renderTourStep(); }
+function tourPrev(){ _tourStep = Math.max(_tourStep-1, 0); _renderTourStep(); }
+
+function endTour(){
+  document.querySelector('.tour-overlay')?.remove();
+  document.querySelector('.tour-card')?.remove();
+  localStorage.setItem('arena26_toured','1');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+ensureSystemCats();
+ensureLayout();
+save();
+document.getElementById('seasonBadge').textContent = S.config.quarter + ' Season';
+renderTabNav();
+renderArena();
+setTimeout(checkWeeklyAward, 600);
+if(!localStorage.getItem('arena26_toured')) setTimeout(startTour, 900);
+</script>
+</body>
+</html>
