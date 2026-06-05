@@ -392,6 +392,21 @@ const BAKED_STATE = null; /*BAKED_STATE_MARKER*/
 const SK = 'arena26';
 
 let S = (() => {
+  // If a hardened state exists and is newer than what's in localStorage, it wins — wipes local cache
+  if(BAKED_STATE && BAKED_STATE._bakedAt){
+    try {
+      for(const key of ['arena26','arena26_v4','arena26_v3','arena26_v2','arena26_v1']){
+        const raw = localStorage.getItem(key);
+        if(!raw) continue;
+        const p = JSON.parse(raw);
+        if(!p._bakedAt || BAKED_STATE._bakedAt > p._bakedAt){
+          localStorage.setItem(SK, JSON.stringify(BAKED_STATE));
+          return JSON.parse(JSON.stringify(BAKED_STATE));
+        }
+        break;
+      }
+    } catch(e){}
+  }
   // Check current key first, then fall back through legacy keys so existing edits survive
   for(const key of ['arena26','arena26_v4','arena26_v3','arena26_v2','arena26_v1']){
     try {
@@ -405,8 +420,7 @@ let S = (() => {
       if(!p.events)          p.events          = [];
       if(!p.teams)           p.teams           = [];
       if(!p.processedWeeks)  p.processedWeeks  = [];
-      if(!p.layout)          p.layout          = null; // ensureLayout() fills this
-      // Ensure every rep has the fields introduced in later versions
+      if(!p.layout)          p.layout          = null;
       p.reps.forEach(r => {
         if(!r.position) r.position = 'Entry Level';
         if(r.team === undefined) r.team = '';
@@ -416,7 +430,10 @@ let S = (() => {
       return p;
     } catch(e){}
   }
-  if(BAKED_STATE) return JSON.parse(JSON.stringify(BAKED_STATE));
+  if(BAKED_STATE){
+    localStorage.setItem(SK, JSON.stringify(BAKED_STATE));
+    return JSON.parse(JSON.stringify(BAKED_STATE));
+  }
   return {
     config:{name:'THE ARENA',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'},
     reps:JSON.parse(JSON.stringify(SEED_REPS)),
@@ -1427,8 +1444,8 @@ async function deployToGitHub(){
     const bytes = Uint8Array.from(atob(fileData.content.replace(/\n/g,'')), c=>c.charCodeAt(0));
     const currentContent = new TextDecoder('utf-8').decode(bytes);
 
-    // Replace BAKED_STATE line with current state
-    const stateJson = JSON.stringify(S);
+    // Replace BAKED_STATE line with current state, stamped with deploy time
+    const stateJson = JSON.stringify(Object.assign({}, S, {_bakedAt: Date.now()}));
     const newContent = currentContent.replace(
       /const BAKED_STATE = .*?; \/\*BAKED_STATE_MARKER\*\//,
       `const BAKED_STATE = ${stateJson}; /*BAKED_STATE_MARKER*/`
