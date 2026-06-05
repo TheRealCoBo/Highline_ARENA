@@ -504,22 +504,32 @@ function scheduleLivePush(){
   _livePushTimer = setTimeout(pushLiveState, 2500);
 }
 
+async function _attemptLivePush(){
+  const state = Object.assign({}, S, {_bakedAt: Date.now()});
+  if(!_liveStateSha){
+    const existing = await fetchGHFile('live-state.json');
+    if(existing) _liveStateSha = existing.sha;
+  }
+  const result = await pushGHFile('live-state.json', state, _liveStateSha, LIVE_WRITE_TOKEN, 'live: auto-save');
+  _liveStateSha = result.content.sha;
+  S._bakedAt = state._bakedAt;
+  localStorage.setItem(SK, JSON.stringify(S));
+  setCloudStatus('☁ Saved', 'var(--green)');
+  setTimeout(()=>setCloudStatus(''), 3000);
+}
+
 async function pushLiveState(){
   try {
-    const state = Object.assign({}, S, {_bakedAt: Date.now()});
-    // If SHA not yet fetched, grab it now before pushing
-    if(!_liveStateSha){
-      const existing = await fetchGHFile('live-state.json');
-      if(existing) _liveStateSha = existing.sha;
-    }
-    const result = await pushGHFile('live-state.json', state, _liveStateSha, LIVE_WRITE_TOKEN, 'live: auto-save');
-    _liveStateSha = result.content.sha;
-    S._bakedAt = state._bakedAt;
-    localStorage.setItem(SK, JSON.stringify(S));
-    setCloudStatus('☁ Saved', 'var(--green)');
-    setTimeout(()=>setCloudStatus(''), 3000);
+    await _attemptLivePush();
   } catch(e){
-    setCloudStatus(`⚠ ${e.message}`, 'var(--red)');
+    if(e.message && e.message.includes('does not match')){
+      // SHA is stale — re-fetch and retry once
+      _liveStateSha = null;
+      try { await _attemptLivePush(); }
+      catch(e2){ setCloudStatus(`⚠ ${e2.message}`, 'var(--red)'); }
+    } else {
+      setCloudStatus(`⚠ ${e.message}`, 'var(--red)');
+    }
   }
 }
 
