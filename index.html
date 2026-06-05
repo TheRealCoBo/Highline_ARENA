@@ -507,6 +507,11 @@ function scheduleLivePush(){
 async function pushLiveState(){
   try {
     const state = Object.assign({}, S, {_bakedAt: Date.now()});
+    // If SHA not yet fetched, grab it now before pushing
+    if(!_liveStateSha){
+      const existing = await fetchGHFile('live-state.json');
+      if(existing) _liveStateSha = existing.sha;
+    }
     const result = await pushGHFile('live-state.json', state, _liveStateSha, LIVE_WRITE_TOKEN, 'live: auto-save');
     _liveStateSha = result.content.sha;
     S._bakedAt = state._bakedAt;
@@ -514,7 +519,7 @@ async function pushLiveState(){
     setCloudStatus('☁ Saved', 'var(--green)');
     setTimeout(()=>setCloudStatus(''), 3000);
   } catch(e){
-    setCloudStatus('⚠ Save failed', 'var(--red)');
+    setCloudStatus(`⚠ ${e.message}`, 'var(--red)');
   }
 }
 
