@@ -301,6 +301,33 @@ th.sort-on .sort-arrow{opacity:1;color:var(--accent)}
   </div>
 </div>
 
+<!-- Role Gate Modal -->
+<div id="roleModal" class="modal-bg" style="z-index:500;background:rgba(0,0,0,.92)">
+  <div class="modal" style="max-width:420px">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-family:var(--fh);font-size:26px;font-weight:700;letter-spacing:.06em;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">⚡ HIGHLINE: ARENA 26</div>
+      <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.14em;margin-top:2px">Competition Tracker</div>
+    </div>
+    <div id="roleSelectPane">
+      <h2 style="text-align:center;margin-bottom:20px;font-size:17px;letter-spacing:.04em">Please select your role:</h2>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <button class="btn primary" style="padding:14px;font-size:15px;font-family:var(--fh);letter-spacing:.06em" onclick="handleRoleSelect('rep')">👤 Sales Rep</button>
+        <button class="btn" style="padding:14px;font-size:15px;font-family:var(--fh);letter-spacing:.06em;border-color:rgba(167,139,250,.4);color:var(--purple)" onclick="handleRoleSelect('admin')">🔐 Admin</button>
+      </div>
+    </div>
+    <div id="adminPasswordPane" style="display:none">
+      <h2 style="text-align:center;margin-bottom:14px;font-size:17px">🔐 Admin Access</h2>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:14px;text-align:center">Enter your admin password to continue.</p>
+      <div class="form-row"><div><input type="password" id="adminPwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkAdminPassword()" autocomplete="off"></div></div>
+      <div id="adminPwError" style="color:var(--red);font-size:12px;min-height:18px;margin-bottom:8px;text-align:center"></div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn" onclick="showRoleSelectPane()">← Back</button>
+        <button class="btn primary" onclick="checkAdminPassword()">Unlock →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -504,30 +531,27 @@ function scheduleLivePush(){
   _livePushTimer = setTimeout(pushLiveState, 2500);
 }
 
-async function _attemptLivePush(){
-  const state = Object.assign({}, S, {_bakedAt: Date.now()});
-  if(!_liveStateSha){
-    const existing = await fetchGHFile('live-state.json');
-    if(existing) _liveStateSha = existing.sha;
-  }
-  const result = await pushGHFile('live-state.json', state, _liveStateSha, LIVE_WRITE_TOKEN, 'live: auto-save');
-  _liveStateSha = result.content.sha;
-  S._bakedAt = state._bakedAt;
-  localStorage.setItem(SK, JSON.stringify(S));
-  setCloudStatus('☁ Saved', 'var(--green)');
-  setTimeout(()=>setCloudStatus(''), 3000);
-}
-
 async function pushLiveState(){
-  try {
-    await _attemptLivePush();
-  } catch(e){
-    if(e.message && e.message.includes('does not match')){
-      // SHA is stale — re-fetch and retry once
-      _liveStateSha = null;
-      try { await _attemptLivePush(); }
-      catch(e2){ setCloudStatus(`⚠ ${e2.message}`, 'var(--red)'); }
-    } else {
+  const _isShaConflict = msg => /does not match|not a fast-forward|conflict/i.test(msg||'');
+  for(let attempt = 0; attempt < 2; attempt++){
+    try {
+      const state = Object.assign({}, S, {_bakedAt: Date.now()});
+      // Always fetch a fresh SHA before each attempt
+      const existing = await fetchGHFile('live-state.json');
+      _liveStateSha = existing ? existing.sha : null;
+      const result = await pushGHFile('live-state.json', state, _liveStateSha, LIVE_WRITE_TOKEN, 'live: auto-save');
+      _liveStateSha = result.content.sha;
+      S._bakedAt = state._bakedAt;
+      localStorage.setItem(SK, JSON.stringify(S));
+      setCloudStatus('☁ Saved', 'var(--green)');
+      setTimeout(()=>setCloudStatus(''), 3000);
+      return;
+    } catch(e){
+      if(attempt === 0 && _isShaConflict(e.message)){
+        // SHA was stale — re-fetch and retry once
+        await new Promise(r => setTimeout(r, 800));
+        continue;
+      }
       setCloudStatus(`⚠ ${e.message}`, 'var(--red)');
     }
   }
@@ -638,6 +662,7 @@ let _dragCardId = null;
 function renderTabNav(){
   const nav = document.getElementById('tabNav'); if(!nav) return;
   nav.innerHTML = S.layout.tabs
+    .filter(t => _role !== 'rep' || REP_TABS.includes(t.id))
     .filter(t => t.visible || _editMode)
     .map(t => `
       <button class="tab-btn${_activeTab===t.id?' active':''}${!t.visible?' tab-hidden':''}" data-tab="${t.id}">
@@ -1516,6 +1541,16 @@ function renderSettings(){
     </div>
   </div>
 
+  ${_role === 'admin' ? `<div class="card" style="max-width:600px">
+    <div class="card-header"><h3>🔐 Admin Password</h3></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:14px">Change the password required to access admin features. Saved to this browser's local storage.</p>
+      <div class="form-row"><div><label>New Password</label><input type="password" id="newAdminPw1" placeholder="Enter new password" autocomplete="new-password"></div></div>
+      <div class="form-row"><div><label>Confirm Password</label><input type="password" id="newAdminPw2" placeholder="Confirm new password" autocomplete="new-password"></div></div>
+      <button class="btn primary" onclick="changeAdminPassword()">Update Password</button>
+    </div>
+  </div>` : ''}
+
   <div class="card" style="max-width:600px">
     <div class="card-header"><h3>🚀 Push to GitHub</h3></div>
     <div class="card-body">
@@ -1966,7 +2001,7 @@ function submitAward(){
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m && m.id !== 'roleModal') m.classList.remove('open'); }));
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -2347,17 +2382,95 @@ function endTour(){
   localStorage.setItem('arena26_toured','1');
 }
 
+// ── Role Gate ─────────────────────────────────────────────────────────────────
+const ADMIN_PW_KEY = 'arena26_admin_pw';
+const DEFAULT_ADMIN_PW = 'n^4%mRT,u8NsL9H<T==`)i,e>AER,-\\d(Rg|2GD^"';
+const REP_TABS = ['arena','reps','scoreboard'];
+
+let _role = sessionStorage.getItem('arena26_role') || null;
+
+function getAdminPw(){ return localStorage.getItem(ADMIN_PW_KEY) || DEFAULT_ADMIN_PW; }
+
+function applyRole(role){
+  _role = role;
+  sessionStorage.setItem('arena26_role', role);
+  document.getElementById('roleModal').classList.remove('open');
+  const isAdmin = role === 'admin';
+  document.getElementById('editModeBtn').style.display = isAdmin ? '' : 'none';
+  document.querySelector('.btn-award').style.display   = isAdmin ? '' : 'none';
+  renderTabNav();
+  if(role === 'rep' && !REP_TABS.includes(_activeTab)) switchActiveTab('arena');
+  else renderTab(_activeTab);
+  if(isAdmin){
+    setTimeout(checkWeeklyAward, 300);
+    if(!localStorage.getItem('arena26_toured')) setTimeout(startTour, 600);
+  }
+}
+
+function handleRoleSelect(role){
+  if(role === 'rep'){
+    applyRole('rep');
+  } else {
+    document.getElementById('roleSelectPane').style.display = 'none';
+    document.getElementById('adminPasswordPane').style.display = '';
+    setTimeout(() => { const inp = document.getElementById('adminPwInput'); if(inp) inp.focus(); }, 50);
+  }
+}
+
+function showRoleSelectPane(){
+  document.getElementById('adminPasswordPane').style.display = 'none';
+  document.getElementById('roleSelectPane').style.display = '';
+  const inp = document.getElementById('adminPwInput');
+  if(inp) inp.value = '';
+  document.getElementById('adminPwError').textContent = '';
+}
+
+function checkAdminPassword(){
+  const inp = document.getElementById('adminPwInput');
+  if(!inp) return;
+  if(inp.value === getAdminPw()){
+    inp.value = '';
+    applyRole('admin');
+  } else {
+    document.getElementById('adminPwError').textContent = 'Incorrect password. Please try again.';
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+function changeAdminPassword(){
+  const p1 = (document.getElementById('newAdminPw1')?.value || '').trim();
+  const p2 = (document.getElementById('newAdminPw2')?.value || '').trim();
+  if(!p1){ toast('Enter a new password','red'); return; }
+  if(p1 !== p2){ toast('Passwords do not match','red'); return; }
+  localStorage.setItem(ADMIN_PW_KEY, p1);
+  document.getElementById('newAdminPw1').value = '';
+  document.getElementById('newAdminPw2').value = '';
+  toast('Admin password updated ✓','green');
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 ensureSystemCats();
 ensureLayout();
 save();
 _hasLocalChanges = false;
+clearTimeout(_livePushTimer); // don't push on page load — only on user changes
 document.getElementById('appLogo').textContent = S.config.name;
 document.getElementById('seasonBadge').textContent = S.config.quarter + ' Season';
+// Apply role-based UI on reload if role is already in session
+if(_role){
+  const _isAdmin = _role === 'admin';
+  document.getElementById('editModeBtn').style.display = _isAdmin ? '' : 'none';
+  document.querySelector('.btn-award').style.display   = _isAdmin ? '' : 'none';
+}
 renderTabNav();
 renderArena();
-setTimeout(checkWeeklyAward, 600);
-if(!localStorage.getItem('arena26_toured')) setTimeout(startTour, 900);
+if(!_role){
+  document.getElementById('roleModal').classList.add('open');
+} else {
+  if(_role === 'admin') setTimeout(checkWeeklyAward, 600);
+  if(!localStorage.getItem('arena26_toured') && _role === 'admin') setTimeout(startTour, 900);
+}
 // Startup sync — live site loads live-state.json; local app checks for merge
 setTimeout(startupSync, 1500);
 </script>
