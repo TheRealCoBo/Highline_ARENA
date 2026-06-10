@@ -10,6 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
 :root{--bg:#0a0c12;--elev:#12151e;--elev2:#1a1e2a;--border:#252b3a;--accent:#f5a623;--green:#3ecf8e;--red:#f16062;--yellow:#f5c842;--purple:#a78bfa;--gold:#ffd700;--silver:#c0c0c0;--bronze:#cd7f32;--text:#e8eaf0;--dim:#8a8fa8;--r:10px;--fh:'Oswald',sans-serif;--fm:'Inter',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -331,6 +333,19 @@ th.sort-on .sort-arrow{opacity:1;color:var(--accent)}
 <div id="toast"></div>
 
 <script>
+// ── Firebase ──────────────────────────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey: "AIzaSyDZB8T7G2i6nkq8pGoxkw_IljnEhZO88ug",
+  authDomain: "hl-arena.firebaseapp.com",
+  databaseURL: "https://hl-arena-default-rtdb.firebaseio.com",
+  projectId: "hl-arena",
+  storageBucket: "hl-arena.firebasestorage.app",
+  messagingSenderId: "552171277943",
+  appId: "1:552171277943:web:4c236948d3fdd6bd9b8072"
+});
+const FB_REF = firebase.database().ref('arena26/state');
+let _fbPushTimer = null;
+
 // ── Seed Roster (from Highline Rep List CSV) ──────────────────────────────────
 const SEED_REPS = [
   {id:'r001',name:'Maximilian Allen',position:'Director',team:'id_6irhmvdm116mpzov0pm',trainer:'r024',active:true},
@@ -488,7 +503,7 @@ function save(){
   localStorage.setItem(SK, JSON.stringify(S));
   const dot = document.getElementById('saveDot');
   if(dot){ dot.style.opacity='1'; clearTimeout(dot._t); dot._t=setTimeout(()=>dot.style.opacity='0',1800); }
-  if(IS_LIVE && LIVE_WRITE_TOKEN) scheduleLivePush();
+  scheduleFbPush();
 }
 
 // ── GitHub helpers ────────────────────────────────────────────────────────────
@@ -518,42 +533,30 @@ async function pushGHFile(path, content, sha, token, message){
   return res.json();
 }
 
-// ── Live auto-save (live site only) ──────────────────────────────────────────
+// ── Firebase auto-save ────────────────────────────────────────────────────────
 function setCloudStatus(msg, color='var(--dim)'){
   const el = document.getElementById('cloudDot');
   if(!el) return;
   el.textContent = msg; el.style.color = color; el.style.opacity = msg ? '1' : '0';
 }
 
-function scheduleLivePush(){
+function scheduleFbPush(){
   setCloudStatus('☁ saving…');
-  clearTimeout(_livePushTimer);
-  _livePushTimer = setTimeout(pushLiveState, 2500);
+  clearTimeout(_fbPushTimer);
+  _fbPushTimer = setTimeout(pushToFirebase, 2000);
 }
 
-async function pushLiveState(){
-  const _isShaConflict = msg => /does not match|not a fast-forward|conflict/i.test(msg||'');
-  for(let attempt = 0; attempt < 2; attempt++){
-    try {
-      const state = Object.assign({}, S, {_bakedAt: Date.now()});
-      // Always fetch a fresh SHA before each attempt
-      const existing = await fetchGHFile('live-state.json');
-      _liveStateSha = existing ? existing.sha : null;
-      const result = await pushGHFile('live-state.json', state, _liveStateSha, LIVE_WRITE_TOKEN, 'live: auto-save');
-      _liveStateSha = result.content.sha;
-      S._bakedAt = state._bakedAt;
-      localStorage.setItem(SK, JSON.stringify(S));
-      setCloudStatus('☁ Saved', 'var(--green)');
-      setTimeout(()=>setCloudStatus(''), 3000);
-      return;
-    } catch(e){
-      if(attempt === 0 && _isShaConflict(e.message)){
-        // SHA was stale — re-fetch and retry once
-        await new Promise(r => setTimeout(r, 800));
-        continue;
-      }
-      setCloudStatus(`⚠ ${e.message}`, 'var(--red)');
-    }
+async function pushToFirebase(){
+  try {
+    const ts = Date.now();
+    const state = Object.assign({}, S, {_bakedAt: ts});
+    S._bakedAt = ts; // set before push so our own listener echo is ignored
+    await FB_REF.set(state);
+    localStorage.setItem(SK, JSON.stringify(S));
+    setCloudStatus('☁ Saved', 'var(--green)');
+    setTimeout(()=>setCloudStatus(''), 3000);
+  } catch(e){
+    setCloudStatus(`⚠ ${e.message}`, 'var(--red)');
   }
 }
 
@@ -570,29 +573,28 @@ function applyRemoteState(state){
 }
 
 async function startupSync(){
-  if(IS_LIVE){
-    // Live site: load from live-state.json (their persistent state), fall back to state.json
-    const liveResult = await fetchGHFile('live-state.json');
-    if(liveResult){
-      _liveStateSha = liveResult.sha;
-      const liveState = liveResult.content;
-      if(!S._bakedAt || liveState._bakedAt > S._bakedAt) applyRemoteState(liveState);
-    } else {
-      const baseResult = await fetchGHFile('state.json');
-      if(baseResult){
-        const base = baseResult.content;
-        if(!S._bakedAt || base._bakedAt > S._bakedAt) applyRemoteState(base);
+  setCloudStatus('☁ connecting…');
+  try {
+    const snap = await FB_REF.once('value');
+    const fbState = snap.val();
+    if(fbState && (!S._bakedAt || fbState._bakedAt > S._bakedAt)){
+      applyRemoteState(fbState);
+    }
+    setCloudStatus('');
+    // Real-time listener — every client sees changes the moment they're saved
+    FB_REF.on('value', snap => {
+      const data = snap.val();
+      if(data && data._bakedAt && data._bakedAt > (S._bakedAt || 0)){
+        applyRemoteState(data);
       }
-    }
-  } else {
-    // Local: check live-state.json for changes the live site made
-    const liveResult = await fetchGHFile('live-state.json');
-    if(!liveResult) return;
-    _liveStateSha = liveResult.sha;
-    const liveState = liveResult.content;
-    if(liveState._bakedAt && (!S._bakedAt || liveState._bakedAt > S._bakedAt)){
-      showMergeBanner(liveState);
-    }
+    });
+  } catch(e){
+    setCloudStatus(`⚠ sync: ${e.message}`, 'var(--red)');
+    // Fallback: try GitHub state.json
+    try {
+      const base = await fetchGHFile('state.json');
+      if(base && (!S._bakedAt || base.content._bakedAt > S._bakedAt)) applyRemoteState(base.content);
+    } catch(_){}
   }
 }
 
@@ -1554,15 +1556,11 @@ function renderSettings(){
   <div class="card" style="max-width:600px">
     <div class="card-header"><h3>🚀 Push to GitHub</h3></div>
     <div class="card-body">
-      <p style="font-size:13px;color:var(--dim);margin-bottom:14px">Pushes current state to GitHub as <code>state.json</code>. All users sync the update automatically within ~30s — no page rebuild required. Requires a GitHub Personal Access Token with <strong style="color:var(--text)">repo</strong> scope.</p>
-      <div class="form-row c2">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:14px">Use <strong style="color:var(--text)">Publish App HTML</strong> when you update the app code itself. Data sync is handled automatically by Firebase in real-time — no token needed for that. Requires a GitHub PAT with <strong style="color:var(--text)">repo</strong> scope.</p>
+      <div class="form-row">
         <div>
           <label>Admin Token <span style="color:var(--dim);font-size:11px">(full repo write — stays local only)</span></label>
           <input type="password" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxx" value="${esc(localStorage.getItem('gh_deploy_token')||'')}">
-        </div>
-        <div>
-          <label>Live Write Token <span style="color:var(--dim);font-size:11px">(scoped PAT — baked into published app)</span></label>
-          <input type="password" id="liveTokenInput" placeholder="ghp_xxxxxxxxxxxx" value="${esc(localStorage.getItem('live_write_token')||'')}">
         </div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
@@ -1608,9 +1606,7 @@ function saveGHToken(){
   const t = (document.getElementById('ghTokenInput').value||'').trim();
   if(!t){ toast('Enter an admin token first','red'); return; }
   localStorage.setItem('gh_deploy_token', t);
-  const lt = (document.getElementById('liveTokenInput').value||'').trim();
-  if(lt) localStorage.setItem('live_write_token', lt);
-  toast('Tokens saved','green');
+  toast('Token saved','green');
 }
 
 async function deployToGitHub(){
@@ -2454,7 +2450,7 @@ ensureSystemCats();
 ensureLayout();
 save();
 _hasLocalChanges = false;
-clearTimeout(_livePushTimer); // don't push on page load — only on user changes
+clearTimeout(_fbPushTimer); // don't push on page load — only on user changes
 document.getElementById('appLogo').textContent = S.config.name;
 document.getElementById('seasonBadge').textContent = S.config.quarter + ' Season';
 // Apply role-based UI on reload if role is already in session
