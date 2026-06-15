@@ -612,6 +612,7 @@ let S = (() => {
       if(!p.teams)           p.teams           = [];
       if(!p.processedWeeks)  p.processedWeeks  = [];
       if(!p.layout)          p.layout          = null;
+      if(!p.revenue)         p.revenue         = {};
       p.reps.forEach(r => {
         if(!r.position) r.position = 'Entry Level';
         if(r.team === undefined) r.team = '';
@@ -629,7 +630,7 @@ let S = (() => {
     config:{name:'THE ARENA',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'},
     reps:JSON.parse(JSON.stringify(SEED_REPS)),
     categories:JSON.parse(JSON.stringify(SEED_COMPETITION_CATS)),
-    events:[], teams:JSON.parse(JSON.stringify(SEED_TEAMS)), processedWeeks:[]
+    events:[], teams:JSON.parse(JSON.stringify(SEED_TEAMS)), processedWeeks:[], revenue:{}
   };
 })();
 
@@ -1211,30 +1212,20 @@ function sbCompactCard(p){
 }
 
 // ── Revenue Tab ───────────────────────────────────────────────────────────────
-let _revPeriod = 'season';
-
 function renderRevenue(){
   const el = document.getElementById('tab-revenue');
   if(!S.reps.length){
     el.innerHTML = `<div class="empty-state"><div class="icon">💰</div><p>No reps yet. Add reps in Roster first.</p></div>`;
     return;
   }
+  if(!S.revenue) S.revenue = {};
 
-  const [wS,wE] = weekBounds(), [mS,mE] = monthBounds(), today = todayStr();
-  const periods = {
-    season: {label:'Season', from:S.config.startDate, to:S.config.endDate, badge:S.config.quarter},
-    month:  {label:'Month',  from:mS, to:mE,           badge:mS.slice(0,7)},
-    week:   {label:'Week',   from:wS, to:wE,           badge:wS+' – '+wE},
-    today:  {label:'Today',  from:today, to:today,     badge:today},
-  };
-  const p = periods[_revPeriod];
-  const lb = leaderboard(p.from, p.to);
-  const totalRev = lb.reduce((s,r) => s+r.pts, 0);
-  const withRev  = lb.filter(r => r.pts > 0);
+  const repList = S.reps.filter(r => r.active)
+    .map(r => ({...r, rev: S.revenue[r.id] || 0}))
+    .sort((a,b) => b.rev - a.rev);
 
-  const periodBtns = Object.entries(periods).map(([k,v]) =>
-    `<button class="btn${_revPeriod===k?' primary':''} sm" onclick="_revPeriod='${k}';renderRevenue()">${v.label}</button>`
-  ).join('');
+  const totalRev = repList.reduce((s,r) => s + r.rev, 0);
+  const withRev  = repList.filter(r => r.rev > 0);
 
   const podiumOrder = [withRev[1], withRev[0], withRev[2]];
   const podiumCls   = ['p2','p1','p3'];
@@ -1242,33 +1233,22 @@ function renderRevenue(){
 
   const teamRevenue = S.teams.map(t => {
     const members = S.reps.filter(r => r.team===t.id && r.active);
-    const rev = members.reduce((s,r) => s + repPoints(r.id, p.from, p.to), 0);
+    const rev = members.reduce((s,r) => s + (S.revenue[r.id]||0), 0);
     return {...t, rev, cnt: members.length};
   }).filter(t => t.rev > 0).sort((a,b) => b.rev - a.rev);
 
-  const lbWithEvts = lb.map(r => ({
-    ...r, rev: r.pts,
-    evts: S.events.filter(e => e.repIds.includes(r.id) && e.date >= p.from && e.date <= p.to).length
-  }));
+  const isAdmin = _role === 'admin';
 
   el.innerHTML = `
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-    <div>
-      <div style="font-family:var(--fh);font-size:22px;font-weight:700;letter-spacing:.06em">💰 Revenue Rankings</div>
-      <div style="font-size:12px;color:var(--dim);margin-top:2px">${esc(p.badge)} · ${withRev.length} active reps · $${totalRev.toLocaleString()} total</div>
-    </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">${periodBtns}</div>
-  </div>
-
   ${withRev.length >= 1 ? `<div class="card section-gap">
-    <div class="card-header"><h3>🏆 Top Earners</h3><span class="badge accent">${esc(p.badge)}</span></div>
+    <div class="card-header"><h3>🏆 Top Earners</h3><span class="badge accent">${esc(S.config.quarter)}</span></div>
     <div class="card-body">
       <div class="podium">
         ${podiumOrder.map((r,i) => {
-          const f = r && r.pts > 0;
+          const f = r && r.rev > 0;
           return `<div class="podium-slot">
             <div class="podium-name" style="${!f?'color:var(--dim)':''}">${f?esc(r.name):'—'}</div>
-            <div class="podium-pts">${f?'$'+r.pts.toLocaleString():'$0'}</div>
+            <div class="podium-pts">${f?'$'+r.rev.toLocaleString():'$0'}</div>
             <div class="podium-block ${podiumCls[i]}" style="${!f?'opacity:.3':''}">${podiumMedal[i]}</div>
           </div>`;
         }).join('')}
@@ -1278,35 +1258,36 @@ function renderRevenue(){
 
   <div class="card section-gap">
     <div class="card-header">
-      <h3>📊 Full Rankings</h3>
-      <span class="badge dim">${lb.length} reps</span>
+      <h3>💰 Revenue Rankings</h3>
+      <span class="badge accent">${esc(S.config.quarter)}</span>
+      <span class="badge dim">${repList.length} reps · $${totalRev.toLocaleString()} total</span>
+      ${isAdmin ? `<span style="font-size:11px;color:var(--dim);margin-left:4px">· Click revenue to edit</span>` : ''}
     </div>
     <div class="card-body" style="padding:0">
       <div class="tbl-wrap"><table>
         <thead><tr>
-          <th style="width:40px">Rank</th>
-          ${_th('revenue','name','Rep')}
+          <th>Rank</th>
+          <th>Rep</th>
           <th>Team</th>
-          ${_th('revenue','rev','Revenue','text-align:right')}
-          <th class="num">Events</th>
+          <th class="num">Revenue</th>
           <th class="num">% Share</th>
         </tr></thead>
         <tbody>
-          ${_sortArr(lbWithEvts,'revenue',{name:r=>r.name,rev:r=>r.rev}).map((r,i) => `
-          <tr onclick="goToRep('${r.id}')" style="cursor:pointer">
+          ${repList.map((r,i) => `
+          <tr>
             <td class="${rankClass(i)}">${rankIcon(i)}</td>
             <td>
               <strong>${esc(r.name)}</strong>
               <div style="font-size:11px;color:var(--dim);margin-top:1px">${esc(r.position||'')}</div>
             </td>
             <td>${teamName(r.team)?`<span class="badge dim">${esc(teamName(r.team))}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
-            <td class="num">
-              <strong style="color:var(--green);font-size:15px;font-family:var(--fh)">$${r.rev.toLocaleString()}</strong>
+            <td class="num" id="revcell-${r.id}"
+              ${isAdmin ? `onclick="editRevCell('${r.id}')" style="cursor:pointer" title="Click to edit"` : ''}>
+              <strong style="color:${r.rev>0?'var(--green)':'var(--dim)'};font-size:15px;font-family:var(--fh)">$${r.rev.toLocaleString()}</strong>
+              ${isAdmin && r.rev===0 ? `<span style="font-size:10px;color:var(--dim);margin-left:4px">✎</span>` : ''}
             </td>
-            <td class="num">${r.evts}</td>
-            <td class="num" style="color:var(--dim)">${totalRev>0?Math.round(r.rev/totalRev*100)+'%':'—'}</td>
+            <td class="num" style="color:var(--dim)">${totalRev>0 && r.rev>0 ? Math.round(r.rev/totalRev*100)+'%' : '—'}</td>
           </tr>`).join('')}
-          ${!lb.length?`<tr><td colspan="6" style="text-align:center;color:var(--dim);padding:32px">No events in this period yet.</td></tr>`:''}
         </tbody>
       </table></div>
     </div>
@@ -1317,7 +1298,7 @@ function renderRevenue(){
     <div class="card-body" style="padding:0">
       <div class="tbl-wrap"><table>
         <thead><tr>
-          <th style="width:40px">Rank</th>
+          <th>Rank</th>
           <th>Team</th>
           <th class="num">Members</th>
           <th class="num">Revenue</th>
@@ -1335,6 +1316,27 @@ function renderRevenue(){
       </table></div>
     </div>
   </div>` : ''}`;
+}
+
+function editRevCell(repId){
+  if(_role !== 'admin') return;
+  const cell = document.getElementById('revcell-'+repId);
+  if(!cell || cell.querySelector('input')) return;
+  const cur = S.revenue[repId] || 0;
+  cell.innerHTML = `<input type="number" min="0" step="1" value="${cur}"
+    style="width:120px;background:var(--elev2);border:1px solid var(--accent);color:var(--text);border-radius:6px;padding:5px 8px;font-size:14px;text-align:right;font-family:var(--fh);outline:none"
+    onblur="saveRevCell('${repId}',this)"
+    onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='Escape'){renderRevenue()}">`;
+  const inp = cell.querySelector('input');
+  inp.focus(); inp.select();
+}
+
+function saveRevCell(repId, inp){
+  const val = Math.max(0, parseFloat(inp.value) || 0);
+  if(!S.revenue) S.revenue = {};
+  S.revenue[repId] = val;
+  save();
+  renderRevenue();
 }
 
 // ── Log Tab ───────────────────────────────────────────────────────────────────
