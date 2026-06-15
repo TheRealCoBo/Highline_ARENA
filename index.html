@@ -315,6 +315,7 @@ th.sort-on .sort-arrow{opacity:1;color:var(--accent)}
   <div id="tab-points" class="tab-section"></div>
   <div id="tab-roster" class="tab-section"></div>
   <div id="tab-settings" class="tab-section"></div>
+  <div id="tab-revenue" class="tab-section"></div>
 </main>
 
 <!-- Award Points Modal -->
@@ -573,7 +574,7 @@ const DEFAULT_CATS = [
 
 // ── Baked State (legacy — superseded by live-state.json sync) ────────────────
 const BAKED_STATE = null; /*BAKED_STATE_MARKER*/
-const LIVE_WRITE_TOKEN = (s=>s?atob(s).split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^'ARENA26HIGHLINE'.charCodeAt(i%14))).join(''):'')('JjsxJjRQaTgoMxd9eAwVEXIDC2sGAn8eASgGDHIZNigAbXd8AggPChodDyYKAgxEZyA/ETp0DH0KJ3x2KlhZOS4VDwccJHIgKD8YA1ESGBURA316EmAkDTVGcnAk'); /*LIVE_TOKEN_MARKER*/
+const LIVE_WRITE_TOKEN = (s=>s?atob(s).split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^'ARENA26HIGHLINE'.charCodeAt(i%14))).join(''):'')(''); /*LIVE_TOKEN_MARKER*/
 const REPO = 'TheRealCoBo/Highline_ARENA';
 const IS_LIVE = location.protocol === 'https:';
 
@@ -611,6 +612,7 @@ let S = (() => {
       if(!p.teams)           p.teams           = [];
       if(!p.processedWeeks)  p.processedWeeks  = [];
       if(!p.layout)          p.layout          = null;
+      if(!p.revenue)         p.revenue         = {};
       p.reps.forEach(r => {
         if(!r.position) r.position = 'Entry Level';
         if(r.team === undefined) r.team = '';
@@ -628,7 +630,7 @@ let S = (() => {
     config:{name:'THE ARENA',quarter:'Q3 2026',startDate:'2026-07-01',endDate:'2026-09-30'},
     reps:JSON.parse(JSON.stringify(SEED_REPS)),
     categories:JSON.parse(JSON.stringify(SEED_COMPETITION_CATS)),
-    events:[], teams:JSON.parse(JSON.stringify(SEED_TEAMS)), processedWeeks:[]
+    events:[], teams:JSON.parse(JSON.stringify(SEED_TEAMS)), processedWeeks:[], revenue:{}
   };
 })();
 
@@ -771,6 +773,7 @@ const DEFAULT_LAYOUT = {
     {id:'arena',      label:'🏟 Arena',      visible:true},
     {id:'reps',       label:'👤 Reps',        visible:true},
     {id:'scoreboard', label:'📋 Scoreboard',  visible:true},
+    {id:'revenue',    label:'💰 Revenue',      visible:true},
     {id:'log',        label:'📜 Log',         visible:true},
     {id:'points',     label:'🎯 Points',      visible:true},
     {id:'roster',     label:'📋 Roster',      visible:true},
@@ -834,6 +837,7 @@ function renderTab(t){
   if(t==='arena') renderArena();
   else if(t==='reps') renderReps();
   else if(t==='scoreboard') renderScoreboard();
+  else if(t==='revenue') renderRevenue();
   else if(t==='log') renderLog();
   else if(t==='points') renderPoints();
   else if(t==='roster') renderRoster();
@@ -1205,6 +1209,134 @@ function sbCompactCard(p){
     ${!top10.length?`<div style="text-align:center;color:var(--dim);padding:20px;font-size:12px">No events this period</div>`:''}
     ${p.data.length>10?`<div style="padding:7px 14px;font-size:11px;color:var(--dim);text-align:center">${p.data.length-10} more · <span style="color:var(--accent);cursor:pointer" onclick="_sbExpanded=true;renderScoreboard()">see all</span></div>`:''}
   </div>`;
+}
+
+// ── Revenue Tab ───────────────────────────────────────────────────────────────
+function renderRevenue(){
+  const el = document.getElementById('tab-revenue');
+  if(!S.reps.length){
+    el.innerHTML = `<div class="empty-state"><div class="icon">💰</div><p>No reps yet. Add reps in Roster first.</p></div>`;
+    return;
+  }
+  if(!S.revenue) S.revenue = {};
+
+  const repList = S.reps.filter(r => r.active)
+    .map(r => ({...r, rev: S.revenue[r.id] || 0}))
+    .sort((a,b) => b.rev - a.rev);
+
+  const totalRev = repList.reduce((s,r) => s + r.rev, 0);
+  const withRev  = repList.filter(r => r.rev > 0);
+
+  const podiumOrder = [withRev[1], withRev[0], withRev[2]];
+  const podiumCls   = ['p2','p1','p3'];
+  const podiumMedal = ['🥈','🥇','🥉'];
+
+  const teamRevenue = S.teams.map(t => {
+    const members = S.reps.filter(r => r.team===t.id && r.active);
+    const rev = members.reduce((s,r) => s + (S.revenue[r.id]||0), 0);
+    return {...t, rev, cnt: members.length};
+  }).filter(t => t.rev > 0).sort((a,b) => b.rev - a.rev);
+
+  const isAdmin = _role === 'admin';
+
+  el.innerHTML = `
+  ${withRev.length >= 1 ? `<div class="card section-gap">
+    <div class="card-header"><h3>🏆 Top Earners</h3><span class="badge accent">${esc(S.config.quarter)}</span></div>
+    <div class="card-body">
+      <div class="podium">
+        ${podiumOrder.map((r,i) => {
+          const f = r && r.rev > 0;
+          return `<div class="podium-slot">
+            <div class="podium-name" style="${!f?'color:var(--dim)':''}">${f?esc(r.name):'—'}</div>
+            <div class="podium-pts">${f?'$'+r.rev.toLocaleString():'$0'}</div>
+            <div class="podium-block ${podiumCls[i]}" style="${!f?'opacity:.3':''}">${podiumMedal[i]}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>` : ''}
+
+  <div class="card section-gap">
+    <div class="card-header">
+      <h3>💰 Revenue Rankings</h3>
+      <span class="badge accent">${esc(S.config.quarter)}</span>
+      <span class="badge dim">${repList.length} reps · $${totalRev.toLocaleString()} total</span>
+      ${isAdmin ? `<span style="font-size:11px;color:var(--dim);margin-left:4px">· Click revenue to edit</span>` : ''}
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>Rank</th>
+          <th>Rep</th>
+          <th>Team</th>
+          <th class="num">Revenue</th>
+          <th class="num">% Share</th>
+        </tr></thead>
+        <tbody>
+          ${repList.map((r,i) => `
+          <tr>
+            <td class="${rankClass(i)}">${rankIcon(i)}</td>
+            <td>
+              <strong>${esc(r.name)}</strong>
+              <div style="font-size:11px;color:var(--dim);margin-top:1px">${esc(r.position||'')}</div>
+            </td>
+            <td>${teamName(r.team)?`<span class="badge dim">${esc(teamName(r.team))}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
+            <td class="num" id="revcell-${r.id}"
+              ${isAdmin ? `onclick="editRevCell('${r.id}')" style="cursor:pointer" title="Click to edit"` : ''}>
+              <strong style="color:${r.rev>0?'var(--green)':'var(--dim)'};font-size:15px;font-family:var(--fh)">$${r.rev.toLocaleString()}</strong>
+              ${isAdmin && r.rev===0 ? `<span style="font-size:10px;color:var(--dim);margin-left:4px">✎</span>` : ''}
+            </td>
+            <td class="num" style="color:var(--dim)">${totalRev>0 && r.rev>0 ? Math.round(r.rev/totalRev*100)+'%' : '—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  ${teamRevenue.length ? `<div class="card">
+    <div class="card-header"><h3>🤝 Team Revenue</h3><span class="badge dim">${teamRevenue.length} team${teamRevenue.length!==1?'s':''}</span></div>
+    <div class="card-body" style="padding:0">
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>Rank</th>
+          <th>Team</th>
+          <th class="num">Members</th>
+          <th class="num">Revenue</th>
+          <th class="num">% Share</th>
+        </tr></thead>
+        <tbody>
+          ${teamRevenue.map((t,i) => `<tr>
+            <td class="${rankClass(i)}">${rankIcon(i)}</td>
+            <td><strong>${esc(t.name)}</strong></td>
+            <td class="num">${t.cnt}</td>
+            <td class="num"><strong style="color:var(--green);font-size:15px;font-family:var(--fh)">$${t.rev.toLocaleString()}</strong></td>
+            <td class="num" style="color:var(--dim)">${totalRev>0?Math.round(t.rev/totalRev*100)+'%':'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+  </div>` : ''}`;
+}
+
+function editRevCell(repId){
+  if(_role !== 'admin') return;
+  const cell = document.getElementById('revcell-'+repId);
+  if(!cell || cell.querySelector('input')) return;
+  const cur = S.revenue[repId] || 0;
+  cell.innerHTML = `<input type="number" min="0" step="1" value="${cur}"
+    style="width:120px;background:var(--elev2);border:1px solid var(--accent);color:var(--text);border-radius:6px;padding:5px 8px;font-size:14px;text-align:right;font-family:var(--fh);outline:none"
+    onblur="saveRevCell('${repId}',this)"
+    onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='Escape'){renderRevenue()}">`;
+  const inp = cell.querySelector('input');
+  inp.focus(); inp.select();
+}
+
+function saveRevCell(repId, inp){
+  const val = Math.max(0, parseFloat(inp.value) || 0);
+  if(!S.revenue) S.revenue = {};
+  S.revenue[repId] = val;
+  save();
+  renderRevenue();
 }
 
 // ── Log Tab ───────────────────────────────────────────────────────────────────
@@ -2520,7 +2652,7 @@ function endTour(){
 // ── Role Gate ─────────────────────────────────────────────────────────────────
 const ADMIN_PW_KEY = 'arena26_admin_pw';
 const DEFAULT_ADMIN_PW = 'n^4%mRT,u8NsL9H<T==`)i,e>AER,-\\d(Rg|2GD^"';
-const REP_TABS = ['arena','reps','scoreboard'];
+const REP_TABS = ['arena','reps','scoreboard','revenue'];
 
 let _role = sessionStorage.getItem('arena26_role') || null;
 
