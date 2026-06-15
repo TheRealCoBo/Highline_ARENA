@@ -142,72 +142,6 @@ th.sort-on .sort-arrow{opacity:1;color:var(--accent)}
 .tour-dot{width:7px;height:7px;border-radius:50%;display:inline-block;transition:background .2s}
 @keyframes tourGlow{0%,100%{box-shadow:0 0 0 0 rgba(245,166,35,.7)}50%{box-shadow:0 0 0 10px rgba(245,166,35,0)}}
 
-/* ── Column hide classes (class on <table>, selector targets cells) ──── */
-table.hide-col-team [data-col="team"],
-table.hide-col-evts [data-col="evts"],
-table.hide-col-cat  [data-col="cat"],
-table.hide-col-type [data-col="type"],
-table.hide-col-note [data-col="note"],
-table.hide-col-del  [data-col="del"],
-table.hide-col-reps [data-col="reps"],
-table.hide-col-pts  [data-col="pts"]{display:none}
-
-/* ── Weekly/Monthly card: desktop shows both, mobile shows one ───────── */
-.wm-dual{display:grid;grid-template-columns:1fr 1fr}
-.wm-single{display:none}
-@media(max-width:600px){.wm-dual{display:none!important}.wm-single{display:block!important}}
-
-/* ── Mobile table: fixed layout, no horizontal overflow ─────────────── */
-@media(max-width:600px){
-  /* Only data-tbl tables get fixed layout (has data-col hints) */
-  table[data-tbl]{table-layout:fixed;width:100%}
-  table[data-tbl] td,table[data-tbl] th{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .td-note{color:var(--dim)}
-  /* Standings fixed widths */
-  table[data-tbl="standings"] [data-col="rank"]{width:32px}
-  table[data-tbl="standings"] [data-col="pts"]{width:56px}
-  table[data-tbl="standings"] [data-col="evts"]{width:44px}
-  /* Rep history fixed widths */
-  table[data-tbl="rep_history"] [data-col="date"]{width:82px}
-  table[data-tbl="rep_history"] [data-col="pts"]{width:52px}
-  table[data-tbl="rep_history"] [data-col="del"]{width:32px}
-  /* Rep breakdown fixed widths */
-  table[data-tbl="rep_breakdown"] [data-col="pts"]{width:52px}
-  table[data-tbl="rep_breakdown"] [data-col="evts"]{width:44px}
-  table[data-tbl="rep_breakdown"] [data-col="type"]{width:56px}
-  /* Log table fixed widths */
-  table[data-tbl="log"] [data-col="date"]{width:82px}
-  table[data-tbl="log"] [data-col="pts"]{width:52px}
-  table[data-tbl="log"] [data-col="del"]{width:32px}
-  /* Mini LB tables (no data-tbl): let them be auto-width */
-  table:not([data-tbl]) td{white-space:nowrap}
-  /* stat-grid in rep detail: 3-col on phones */
-  #repDetail .stat-grid{grid-template-columns:repeat(3,1fr)!important}
-}
-
-/* ── Z Fold outer cover ≤320px ───────────────────────────────────────── */
-@media(max-width:320px){
-  main{padding:7px}
-  .topbar{padding:0 8px}
-  .logo{font-size:13px}
-  .logo-sub{font-size:7px}
-  .btn-award{font-size:10px;padding:5px 8px}
-  #editModeBtn,#switchAdminBtn{font-size:10px;padding:5px 6px}
-  .tab-btn{padding:11px 7px;font-size:10px}
-  .stat-grid{gap:5px}
-  .stat-card{padding:10px 5px}
-  .stat-card .val{font-size:17px}
-  .stat-card .lbl{font-size:8px}
-  .card-header{padding:8px 10px}
-  .card-body{padding:10px}
-  table[data-tbl="standings"] [data-col="rank"]{width:28px}
-  table[data-tbl="standings"] [data-col="pts"]{width:46px}
-  table[data-tbl="rep_history"] [data-col="date"]{width:72px}
-  table[data-tbl="rep_history"] [data-col="pts"]{width:46px}
-  table[data-tbl="rep_breakdown"] [data-col="pts"]{width:46px}
-  table[data-tbl="rep_breakdown"] [data-col="evts"]{width:36px}
-}
-
 /* ── Touch baseline ──────────────────────────────────────────────────── */
 *{-webkit-tap-highlight-color:transparent}
 .btn,.btn-award,.tab-btn,.rep-sidebar-item{touch-action:manipulation}
@@ -537,10 +471,6 @@ table.hide-col-pts  [data-col="pts"]{display:none}
 </div>
 
 <div id="toast"></div>
-<div id="colPickerPanel" style="display:none;position:fixed;z-index:400;background:var(--elev2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;min-width:180px;box-shadow:0 8px 28px rgba(0,0,0,.6)">
-  <div style="font-size:10px;font-family:var(--fh);letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">COLUMNS</div>
-  <div class="cp-body"></div>
-</div>
 
 <script>
 // ── Firebase ──────────────────────────────────────────────────────────────────
@@ -644,7 +574,7 @@ const DEFAULT_CATS = [
 
 // ── Baked State (legacy — superseded by live-state.json sync) ────────────────
 const BAKED_STATE = null; /*BAKED_STATE_MARKER*/
-const LIVE_WRITE_TOKEN = (s=>s?atob(s).split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^'ARENA26HIGHLINE'.charCodeAt(i%14))).join(''):'')(''); /*LIVE_TOKEN_MARKER*/
+const LIVE_WRITE_TOKEN = (s=>s?atob(s).split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^'ARENA26HIGHLINE'.charCodeAt(i%14))).join(''):'')('JjsxJjRQaTgoMxd9eAwVEXIDC2sGAn8eASgGDHIZNigAbXd8AggPChodDyYKAgxEZyA/ETp0DH0KJ3x2KlhZOS4VDwccJHIgKD8YA1ESGBURA316EmAkDTVGcnAk'); /*LIVE_TOKEN_MARKER*/
 const REPO = 'TheRealCoBo/Highline_ARENA';
 const IS_LIVE = location.protocol === 'https:';
 
@@ -853,84 +783,24 @@ const DEFAULT_LAYOUT = {
     {id:'podium',    label:'Season Podium',      visible:true, span:4},
     {id:'weekmonth', label:'Weekly / Monthly',   visible:true, span:4},
     {id:'standings', label:'Overall Standings',  visible:true, span:4},
-  ],
-  repCards:[
-    {id:'rep_stats',     label:'Stats Overview',     visible:true, span:4},
-    {id:'rep_breakdown', label:'Category Breakdown', visible:true, span:4},
-    {id:'rep_history',   label:'Event History',      visible:true, span:4},
-  ],
-  scoreCards:[
-    {id:'sb_season', label:'Season Standings', visible:true, span:2},
-    {id:'sb_month',  label:'Monthly Standings',visible:true, span:2},
-    {id:'sb_week',   label:'Weekly Standings', visible:true, span:2},
-    {id:'sb_today',  label:"Today's Leaders",  visible:true, span:2},
   ]
 };
 
 function ensureLayout(){
   if(!S.layout) S.layout = JSON.parse(JSON.stringify(DEFAULT_LAYOUT));
-  ['tabs','arenaCards','repCards','scoreCards'].forEach(k => {
-    if(!S.layout[k]) S.layout[k] = JSON.parse(JSON.stringify(DEFAULT_LAYOUT[k]));
-    DEFAULT_LAYOUT[k].forEach(dc => { if(!S.layout[k].find(c=>c.id===dc.id)) S.layout[k].push({...dc}); });
-  });
+  if(!S.layout.tabs)       S.layout.tabs       = JSON.parse(JSON.stringify(DEFAULT_LAYOUT.tabs));
+  if(!S.layout.arenaCards) S.layout.arenaCards = JSON.parse(JSON.stringify(DEFAULT_LAYOUT.arenaCards));
+  DEFAULT_LAYOUT.tabs.forEach(dt => { if(!S.layout.tabs.find(t=>t.id===dt.id)) S.layout.tabs.push({...dt}); });
+  DEFAULT_LAYOUT.arenaCards.forEach(dc => { if(!S.layout.arenaCards.find(c=>c.id===dc.id)) S.layout.arenaCards.push({...dc}); });
+  // ensure every card has a span
   S.layout.arenaCards.forEach(c => { if(!c.span) c.span = 4; });
-  S.layout.repCards.forEach(c   => { if(!c.span) c.span = 4; });
-  S.layout.scoreCards.forEach(c => { if(!c.span) c.span = 2; });
 }
 function lTab(id){ return S.layout.tabs.find(t=>t.id===id) || {id,label:id,visible:true}; }
-function _getDeck(dn){ return dn==='rep'?S.layout.repCards:dn==='score'?S.layout.scoreCards:S.layout.arenaCards; }
-function lCard(id,dn){ return _getDeck(dn).find(c=>c.id===id) || {id,label:id,visible:true,span:4}; }
-function _reRenderDeck(dn){ if(dn==='rep') renderReps(); else if(dn==='score') renderScoreboard(); else renderArena(); }
+function lCard(id){ return S.layout.arenaCards.find(c=>c.id===id) || {id,label:id,visible:true}; }
 
 let _editMode = false;
 let _activeTab = 'arena';
 let _dragCardId = null;
-let _wmView = 'week'; // weekmonth card mobile toggle
-
-// ── Column visibility ─────────────────────────────────────────────────────────
-const _CV_KEY = 'arena26_colVis';
-let _colVis = {};
-try{ _colVis = JSON.parse(localStorage.getItem(_CV_KEY)||'{}'); }catch(_){}
-const _MOB_HIDDEN = {standings:['team','evts'], rep_history:['cat','note'], rep_breakdown:['type','evts'], log:['cat','type','note']};
-function _colVisible(tbl, col){
-  const key = tbl+'|'+col;
-  if(key in _colVis) return _colVis[key];
-  const isMob = window.innerWidth <= 600;
-  return !(isMob && (_MOB_HIDDEN[tbl]||[]).includes(col));
-}
-function getTableCls(tbl){
-  const hide = ['team','evts','cat','type','note','del'];
-  return hide.filter(c=>!_colVisible(tbl,c)).map(c=>'hide-col-'+c).join(' ');
-}
-function toggleColVis(tbl, col){
-  const key = tbl+'|'+col;
-  _colVis[key] = !_colVisible(tbl, col);
-  localStorage.setItem(_CV_KEY, JSON.stringify(_colVis));
-  // Update tables in-place without full re-render
-  document.querySelectorAll(`table[data-tbl="${tbl}"]`).forEach(t => { t.className = getTableCls(tbl); });
-  const p = document.getElementById('colPickerPanel');
-  if(p && p.style.display!=='none') p.querySelectorAll('input[type=checkbox]').forEach(cb=>{
-    cb.checked = _colVisible(tbl, cb.dataset.col);
-  });
-}
-function openColPicker(tbl, cols, ev){
-  ev.stopPropagation();
-  const p = document.getElementById('colPickerPanel');
-  if(!p) return;
-  p.dataset.tbl = tbl;
-  p.querySelector('.cp-body').innerHTML = cols.map(([col,lbl])=>`
-    <label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font-size:12px">
-      <input type="checkbox" data-col="${col}" ${_colVisible(tbl,col)?'checked':''} onchange="toggleColVis('${tbl}','${col}')">
-      ${lbl}
-    </label>`).join('');
-  const btn = ev.currentTarget || ev.target;
-  const r = btn.getBoundingClientRect();
-  const top = Math.min(r.bottom+4, window.innerHeight-220);
-  const left = Math.max(8, Math.min(r.left, window.innerWidth-196));
-  p.style.cssText = `display:block;top:${top}px;left:${left}px`;
-}
-function closeColPicker(){ const p=document.getElementById('colPickerPanel'); if(p) p.style.display='none'; }
-document.addEventListener('click', e=>{ const p=document.getElementById('colPickerPanel'); if(p&&p.style.display!=='none'&&!p.contains(e.target)) closeColPicker(); });
 
 function renderTabNav(){
   const nav = document.getElementById('tabNav'); if(!nav) return;
@@ -1010,56 +880,52 @@ function rankIcon(i){ return i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1); }
 function rankClass(i){ return i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''; }
 
 // ── Arena Tab ─────────────────────────────────────────────────────────────────
-function setCardSize(id, dn, span){
-  if(typeof dn === 'number'){ span=dn; dn='arena'; } // backwards compat
-  const c = lCard(id, dn); c.span = parseInt(span)||(dn==='score'?2:4); save(); _reRenderDeck(dn);
+function setCardSize(id, span){
+  const c = lCard(id); c.span = parseInt(span)||4; save(); renderArena();
 }
 
-function moveCardUp(id, dn='arena'){
-  const cards = _getDeck(dn), i = cards.findIndex(c=>c.id===id);
+function moveCardUp(id){
+  const cards = S.layout.arenaCards, i = cards.findIndex(c=>c.id===id);
   if(i <= 0) return;
   [cards[i-1], cards[i]] = [cards[i], cards[i-1]];
-  save(); _reRenderDeck(dn);
+  save(); renderArena();
 }
 
-function moveCardDown(id, dn='arena'){
-  const cards = _getDeck(dn), i = cards.findIndex(c=>c.id===id);
+function moveCardDown(id){
+  const cards = S.layout.arenaCards, i = cards.findIndex(c=>c.id===id);
   if(i < 0 || i >= cards.length-1) return;
   [cards[i], cards[i+1]] = [cards[i+1], cards[i]];
-  save(); _reRenderDeck(dn);
+  save(); renderArena();
 }
 
-function _cardShell(c, headerHtml, bodyHtml, dn){
-  dn = dn || 'arena';
-  const maxSpan = dn === 'score' ? 2 : 4;
-  const span = Math.min(c.span || maxSpan, maxSpan);
+function _cardShell(c, headerHtml, bodyHtml){
+  const span = Math.min(c.span||4, 4);
   const hidden = c.visible === false;
-  const cards = _getDeck(dn);
+  const cards = S.layout.arenaCards;
   const idx = cards.findIndex(x=>x.id===c.id);
 
-  const widthBtns = Array.from({length:maxSpan},(_,s)=>s+1).map(s => {
-    const icon = '■'.repeat(s) + '□'.repeat(maxSpan-s);
-    const tips2 = ['½ width','Full width'];
-    const tips4 = ['¼ width','½ width','¾ width','Full width'];
-    const tip = (maxSpan===2 ? tips2 : tips4)[s-1];
-    return `<button class="em-card-btn${span===s?' em-on':''}" onclick="setCardSize('${c.id}','${dn}',${s})" title="${tip}" style="font-size:9px;letter-spacing:1px;font-family:monospace;padding:2px 5px">${icon}</button>`;
+  // Visual width picker: filled vs empty blocks  ■■□□  etc.
+  const widthBtns = [1,2,3,4].map(s => {
+    const icon = '■'.repeat(s) + '□'.repeat(4-s);
+    const tips = ['¼ width','½ width','¾ width','Full width'];
+    return `<button class="em-card-btn${span===s?' em-on':''}" onclick="setCardSize('${c.id}',${s})" title="${tips[s-1]}" style="font-size:9px;letter-spacing:1px;font-family:monospace;padding:2px 5px">${icon}</button>`;
   }).join('');
 
   const editBar = _editMode ? `<div class="em-bar">
     <div style="display:flex;gap:2px">
-      <button class="em-card-btn" onclick="moveCardUp('${c.id}','${dn}')" ${idx===0?'disabled style="opacity:.3"':''} title="Move earlier">↑</button>
-      <button class="em-card-btn" onclick="moveCardDown('${c.id}','${dn}')" ${idx===cards.length-1?'disabled style="opacity:.3"':''} title="Move later">↓</button>
+      <button class="em-card-btn" onclick="moveCardUp('${c.id}')" ${idx===0?'disabled style="opacity:.3"':''} title="Move earlier">↑</button>
+      <button class="em-card-btn" onclick="moveCardDown('${c.id}')" ${idx===cards.length-1?'disabled style="opacity:.3"':''} title="Move later">↓</button>
     </div>
     <div class="em-sep"></div>
     <span style="font-size:10px;color:var(--dim);font-family:var(--fh);letter-spacing:.04em">WIDTH:</span>
     <div style="display:flex;gap:2px">${widthBtns}</div>
     <div class="em-sep"></div>
-    <button class="em-card-btn" onclick="renameCard('${c.id}','${dn}')">✎ Rename</button>
-    <button class="em-card-btn${hidden?' em-on':''}" onclick="toggleCardVisible('${c.id}','${dn}')">${hidden?'🚫 Hidden':'👁 Visible'}</button>
+    <button class="em-card-btn" onclick="renameCard('${c.id}')">✎ Rename</button>
+    <button class="em-card-btn${hidden?' em-on':''}" onclick="toggleCardVisible('${c.id}')">${hidden?'🚫 Hidden':'👁 Visible'}</button>
   </div>` : '';
 
   return `<div class="card${_editMode?' em-card':''}${hidden?' em-hidden':''}"
-    data-card-id="${c.id}" data-deck="${dn}"
+    data-card-id="${c.id}"
     style="grid-column:span ${span};min-width:0;overflow:hidden;align-self:start">
     ${editBar}
     ${hidden && _editMode
@@ -1108,48 +974,35 @@ function renderArena(){
       </div></div>`;
 
     if(id==='weekmonth'){
-      const wLabel = `📅 This Week <span class="badge green" style="font-size:9px">${wS} – ${wE}</span>`;
-      const mLabel = `📆 This Month <span class="badge purple" style="font-size:9px">${mS.slice(0,7)}</span>`;
-      const labelStyle = 'font-family:var(--fh);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px';
-      return `<div style="padding:14px">
-        <div class="wm-dual" style="gap:12px">
-          <div><div style="${labelStyle}">${wLabel}</div>${miniLB(weekly)}</div>
-          <div><div style="${labelStyle}">${mLabel}</div>${miniLB(monthly)}</div>
+      const cols = span>=3 ? '1fr 1fr' : '1fr';
+      return `<div style="display:grid;grid-template-columns:${cols};gap:12px;padding:14px">
+        <div>
+          <div style="font-family:var(--fh);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">📅 This Week <span class="badge green" style="font-size:9px">${wS} – ${wE}</span></div>
+          ${miniLB(weekly)}
         </div>
-        <div class="wm-single">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div style="${labelStyle}">${_wmView==='week'?wLabel:mLabel}</div>
-            <button class="btn xs" onclick="_wmView=_wmView==='week'?'month':'week';renderArena()" style="font-size:10px;white-space:nowrap">${_wmView==='week'?'📆 Monthly →':'📅 Weekly →'}</button>
-          </div>
-          ${miniLB(_wmView==='week'?weekly:monthly)}
+        <div>
+          <div style="font-family:var(--fh);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">📆 This Month <span class="badge purple" style="font-size:9px">${mS.slice(0,7)}</span></div>
+          ${miniLB(monthly)}
         </div>
       </div>`;
     }
 
-    if(id==='standings'){
-      const stCols=[['team','Team'],['evts','Events']];
-      const colBtn=`<button class="btn xs" onclick="openColPicker('standings',[${stCols.map(([k,l])=>`['${k}','${l}']`).join(',')}],event)" style="margin-left:auto;font-size:10px;padding:3px 8px" title="Show/hide columns">⊞</button>`;
-      return `<div class="card-body" style="padding:0">
-      <div style="display:flex;align-items:center;padding:6px 14px 0;gap:8px">${colBtn}</div>
-      <div class="tbl-wrap"><table data-tbl="standings" class="${getTableCls('standings')}">
-        <thead><tr>
-          <th data-col="rank">Rank</th>
-          ${_th('arena','name','Rep')}
-          <th data-col="team">Team</th>
-          ${_th('arena','pts','Season Pts','text-align:right')}
-          <th data-col="evts" class="num">Events</th>
+    if(id==='standings') return `<div class="card-body" style="padding:0">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Rank</th>
+          ${_th('arena','name','Rep')}${_th('arena','team','Team')}
+          ${_th('arena','pts','Season Pts','text-align:right')}${_th('arena','evts','Events','text-align:right')}
         </tr></thead>
         <tbody>
           ${_sortArr(overall.map(r=>({...r,evts:S.events.filter(e=>e.repIds.includes(r.id)).length})),'arena',{name:r=>r.name,team:r=>teamName(r.team)||'',pts:r=>r.pts,evts:r=>r.evts}).map((r,i)=>`<tr onclick="goToRep('${r.id}')" style="cursor:pointer">
-            <td data-col="rank" class="${rankClass(i)}">${rankIcon(i)}</td>
-            <td data-col="name"><strong>${r.name}</strong></td>
-            <td data-col="team">${teamName(r.team)?`<span class="badge dim">${esc(teamName(r.team))}</span>`:'—'}</td>
-            <td data-col="pts" class="num"><strong>${r.pts.toLocaleString()}</strong></td>
-            <td data-col="evts" class="num">${r.evts}</td>
+            <td class="${rankClass(i)}">${rankIcon(i)}</td>
+            <td><strong>${r.name}</strong></td>
+            <td>${teamName(r.team)?`<span class="badge dim">${esc(teamName(r.team))}</span>`:'—'}</td>
+            <td class="num"><strong>${r.pts.toLocaleString()}</strong></td>
+            <td class="num">${r.evts}</td>
           </tr>`).join('')}
         </tbody>
       </table></div></div>`;
-    }
     return '';
   }
 
@@ -1210,30 +1063,14 @@ function renderReps(){
           </div>`).join('')}
       </div>
     </div>
-    <div id="repDetail">${rep ? repDetailCards(rep) : '<div class="empty-state" style="padding:40px"><p>Select a rep</p></div>'}</div>
-  </div>`;
-}
-
-function repDetailCards(rep){
-  if(!rep) return '';
-  return `<div class="arena-grid${_editMode?' em-grid-guide':''}">
-    ${S.layout.repCards
-      .filter(c => c.visible !== false || _editMode)
-      .map(c => {
-        const hdr = `<div class="card-header" style="display:flex;align-items:center;gap:8px">
-          <h3>${esc(c.label)}</h3>
-          ${c.id==='rep_history'?`<button class="btn xs" onclick="openColPicker('rep_history',[['cat','Category'],['note','Note']],event)" style="margin-left:auto;font-size:10px;padding:3px 8px">⊞</button>`:''}
-          ${c.id==='rep_breakdown'?`<button class="btn xs" onclick="openColPicker('rep_breakdown',[['type','Type'],['evts','Events']],event)" style="margin-left:auto;font-size:10px;padding:3px 8px">⊞</button>`:''}
-        </div>`;
-        return _cardShell(c, hdr, repSection(rep, c.id), 'rep');
-      }).join('')}
+    <div id="repDetail">${rep ? repDetail(rep) : ''}</div>
   </div>`;
 }
 
 function selectRep(id){
   selRepId = id;
   const rep = S.reps.find(r => r.id === id);
-  document.getElementById('repDetail').innerHTML = rep ? repDetailCards(rep) : '';
+  document.getElementById('repDetail').innerHTML = rep ? repDetail(rep) : '';
   document.querySelectorAll('.rep-sidebar-item').forEach(el => {
     const eid = el.getAttribute('onclick').match(/'(.+)'/)[1];
     el.classList.toggle('active', eid === id);
@@ -1241,85 +1078,65 @@ function selectRep(id){
   });
 }
 
-function repSection(rep, cardId){
+function repDetail(rep){
   const [wS,wE] = weekBounds(), [mS,mE] = monthBounds(), today = todayStr();
   const seasonPts = repPoints(rep.id, S.config.startDate, S.config.endDate);
   const weekPts   = repPoints(rep.id, wS, wE);
   const monthPts  = repPoints(rep.id, mS, mE);
   const todayPts  = repPoints(rep.id, today, today);
   const evts = S.events.filter(e => e.repIds.includes(rep.id)).sort((a,b) => b.date.localeCompare(a.date));
+
   const breakdown = {};
   evts.forEach(e => {
-    if(!breakdown[e.categoryId]) breakdown[e.categoryId] = {pts:0,count:0};
-    breakdown[e.categoryId].pts += e.points; breakdown[e.categoryId].count++;
+    if(!breakdown[e.categoryId]) breakdown[e.categoryId] = {pts:0, count:0};
+    breakdown[e.categoryId].pts += e.points;
+    breakdown[e.categoryId].count++;
   });
-  const rank = leaderboard(S.config.startDate, S.config.endDate).findIndex(r => r.id === rep.id);
 
-  if(cardId === 'rep_stats') return `
-    <div class="card-body" style="padding:12px 10px 10px">
-      <div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">
-        <div class="stat-card" style="border-color:rgba(255,215,0,.2)"><div class="lbl">Season Rank</div><div class="val ${rankClass(rank)}">${rankIcon(rank)}</div><div class="sub">${teamName(rep.team)||'—'}</div></div>
-        <div class="stat-card gold-card"><div class="lbl">Season Total</div><div class="val">${seasonPts.toLocaleString()}</div><div class="sub">pts</div></div>
-        <div class="stat-card green-card"><div class="lbl">This Week</div><div class="val">${weekPts.toLocaleString()}</div><div class="sub">pts</div></div>
-        <div class="stat-card purple-card"><div class="lbl">This Month</div><div class="val">${monthPts.toLocaleString()}</div><div class="sub">pts</div></div>
-        <div class="stat-card accent-card"><div class="lbl">Today</div><div class="val">${todayPts.toLocaleString()}</div><div class="sub">pts</div></div>
-      </div>
-    </div>`;
+  const overallLB = leaderboard(S.config.startDate, S.config.endDate);
+  const rank = overallLB.findIndex(r => r.id === rep.id);
 
-  if(cardId === 'rep_breakdown') return `
+  return `
+  <div class="stat-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="stat-card" style="border-color:rgba(255,215,0,.2)"><div class="lbl">Season Rank</div><div class="val ${rankClass(rank)}">${rankIcon(rank)}</div><div class="sub">${teamName(rep.team)||'—'}</div></div>
+    <div class="stat-card gold-card"><div class="lbl">Season Total</div><div class="val">${seasonPts.toLocaleString()}</div><div class="sub">points</div></div>
+    <div class="stat-card green-card"><div class="lbl">This Week</div><div class="val">${weekPts.toLocaleString()}</div><div class="sub">points</div></div>
+    <div class="stat-card purple-card"><div class="lbl">This Month</div><div class="val">${monthPts.toLocaleString()}</div><div class="sub">points</div></div>
+    <div class="stat-card accent-card"><div class="lbl">Today</div><div class="val">${todayPts.toLocaleString()}</div><div class="sub">points</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Category Breakdown</h3></div>
     <div class="card-body" style="padding:0">
-      <div class="tbl-wrap"><table data-tbl="rep_breakdown" class="${getTableCls('rep_breakdown')}">
-        <thead><tr>
-          <th data-col="cat">Category</th>
-          <th data-col="type">Type</th>
-          <th data-col="evts" class="num">Events</th>
-          <th data-col="pts" class="num">Pts</th>
-        </tr></thead>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Category</th><th>Type</th><th class="num">Events</th><th class="num">Total Pts</th></tr></thead>
         <tbody>
           ${Object.entries(breakdown).sort((a,b)=>b[1].pts-a[1].pts).map(([cid,d]) => {
-            const cat = S.categories.find(c=>c.id===cid);
-            return `<tr>
-              <td data-col="cat">${cat?cat.name:cid}</td>
-              <td data-col="type">${cat?`<span class="badge ${cat.type==='team'?'accent':'purple'}">${cat.type}</span>`:'—'}</td>
-              <td data-col="evts" class="num">${d.count}</td>
-              <td data-col="pts" class="num"><strong>${d.pts.toLocaleString()}</strong></td>
-            </tr>`;
+            const cat = S.categories.find(c => c.id === cid);
+            return `<tr><td>${cat?cat.name:cid}</td><td>${cat?`<span class="badge ${cat.type==='team'?'accent':'purple'}">${cat.type}</span>`:'—'}</td><td class="num">${d.count}</td><td class="num"><strong>${d.pts.toLocaleString()}</strong></td></tr>`;
           }).join('')}
-          ${!Object.keys(breakdown).length?'<tr><td colspan="4" style="text-align:center;color:var(--dim);padding:16px">No events recorded</td></tr>':''}
+          ${!Object.keys(breakdown).length ? '<tr><td colspan="4" style="text-align:center;color:var(--dim);padding:16px">No events recorded</td></tr>' : ''}
         </tbody>
       </table></div>
-    </div>`;
+    </div>
+  </div>
 
-  if(cardId === 'rep_history') return `
+  <div class="card">
+    <div class="card-header"><h3>Event History</h3><span class="badge dim">${evts.length} events</span></div>
     <div class="card-body" style="padding:0">
-      <div class="tbl-wrap"><table data-tbl="rep_history" class="${getTableCls('rep_history')}">
-        <thead><tr>
-          <th data-col="date">Date</th>
-          <th data-col="cat">Category</th>
-          <th data-col="note">Note</th>
-          <th data-col="pts" class="num">Pts</th>
-          ${_role!=='rep'?'<th data-col="del"></th>':''}
-        </tr></thead>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date</th><th>Category</th><th>Note</th><th class="num">Pts</th>${_role !== 'rep' ? '<th></th>' : ''}</tr></thead>
         <tbody>
           ${evts.map(e => {
-            const cat = S.categories.find(c=>c.id===e.categoryId);
-            return `<tr>
-              <td data-col="date" style="white-space:nowrap">${e.date}</td>
-              <td data-col="cat">${cat?cat.name:e.categoryId}</td>
-              <td data-col="note" class="td-note">${esc(e.note||'')}</td>
-              <td data-col="pts" class="num"><strong>${e.points.toLocaleString()}</strong></td>
-              ${_role!=='rep'?`<td data-col="del"><button class="btn xs danger" onclick="deleteEvent('${e.id}')">✕</button></td>`:''}
-            </tr>`;
+            const cat = S.categories.find(c => c.id === e.categoryId);
+            return `<tr><td>${e.date}</td><td>${cat?cat.name:e.categoryId}</td><td style="color:var(--dim);max-width:200px;overflow:hidden;text-overflow:ellipsis">${e.note||''}</td><td class="num"><strong>${e.points.toLocaleString()}</strong></td>${_role !== 'rep' ? `<td><button class="btn xs danger" onclick="deleteEvent('${e.id}')">✕</button></td>` : ''}</tr>`;
           }).join('')}
-          ${!evts.length?`<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:16px">No events yet</td></tr>`:''}
+          ${!evts.length ? '<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:16px">No events yet</td></tr>' : ''}
         </tbody>
       </table></div>
-    </div>`;
-
-  return '';
+    </div>
+  </div>`;
 }
-// Legacy wrapper kept so goToRep doesn't break if called before re-render
-function repDetail(rep){ return repDetailCards(rep); }
 
 // ── Scoreboard Tab ────────────────────────────────────────────────────────────
 let _sbExpanded = false;
@@ -1327,52 +1144,64 @@ let _sbExpanded = false;
 function renderScoreboard(){
   const el = document.getElementById('tab-scoreboard');
   const [wS,wE] = weekBounds(), [mS,mE] = monthBounds(), today = todayStr();
-  const _pMap = {
-    sb_season:{label:'Season', sub:S.config.quarter,  badge:'accent', data:leaderboard(S.config.startDate,S.config.endDate)},
-    sb_month: {label:'Month',  sub:mS.slice(0,7),     badge:'purple', data:leaderboard(mS,mE)},
-    sb_week:  {label:'Week',   sub:wS+' – '+wE,       badge:'green',  data:leaderboard(wS,wE)},
-    sb_today: {label:'Today',  sub:today,             badge:'gold',   data:leaderboard(today,today)},
-  };
-  const expandBtn = `<div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:14px">
-    <button class="btn${_sbExpanded?'':' primary'}" onclick="_sbExpanded=!_sbExpanded;renderScoreboard()">
-      ${_sbExpanded?'← Top 10 View':'📋 Complete Lists'}
-    </button>
-  </div>`;
-  el.innerHTML = expandBtn + `<div class="arena-grid${_editMode?' em-grid-guide':''}">
-    ${S.layout.scoreCards
-      .filter(c => c.visible !== false || _editMode)
-      .map(c => {
-        const p = _pMap[c.id]; if(!p) return '';
-        const hdr = `<div class="card-header" style="padding:9px 14px"><h3 style="font-size:13px;letter-spacing:.06em">${esc(c.label)}</h3><span class="badge ${p.badge}" style="font-size:9px">${p.sub}</span></div>`;
-        const body = _sbExpanded ? sbFullBody(p, c.id) : sbCompactBody(p);
-        return _cardShell(c, hdr, body, 'score');
-      }).join('')}
+  const periods = [
+    {label:'Season', sub:S.config.quarter,  badge:'accent', data:leaderboard(S.config.startDate,S.config.endDate)},
+    {label:'Month',  sub:mS.slice(0,7),     badge:'purple', data:leaderboard(mS,mE)},
+    {label:'Week',   sub:wS+' – '+wE,       badge:'green',  data:leaderboard(wS,wE)},
+    {label:'Today',  sub:today,             badge:'gold',   data:leaderboard(today,today)},
+  ];
+
+  if(_sbExpanded){
+    el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:14px">
+      <button class="btn" onclick="_sbExpanded=false;renderScoreboard()">← Top 10 View</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="two-col">
+      ${periods.map(p=>`
+        <div class="card">
+          <div class="card-header"><h3>${p.label} Standings</h3><span class="badge ${p.badge}">${p.sub}</span></div>
+          <div class="card-body" style="padding:0">
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Rank</th>${_th('sb_'+p.label,'name','Rep')}${_th('sb_'+p.label,'pts','Pts','text-align:right')}</tr></thead>
+              <tbody>
+                ${_sortArr(p.data,'sb_'+p.label,{name:r=>r.name,pts:r=>r.pts}).map((r,i)=>`<tr onclick="goToRep('${r.id}')" style="cursor:pointer">
+                  <td class="${rankClass(i)}">${rankIcon(i)}</td>
+                  <td>${r.name}${teamName(r.team)?` <span class="badge dim" style="font-size:9px">${esc(teamName(r.team))}</span>`:''}</td>
+                  <td class="num"><strong>${r.pts.toLocaleString()}</strong></td>
+                </tr>`).join('')}
+                ${!p.data.length?'<tr><td colspan="3" style="text-align:center;color:var(--dim);padding:16px">No reps</td></tr>':''}
+              </tbody>
+            </table></div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+    return;
+  }
+
+  // ── Compact top-10 view ───────────────────────────────────────────────────
+  el.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:14px">
+    <button class="btn primary" onclick="_sbExpanded=true;renderScoreboard()">📋 Complete Lists</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+    ${periods.map(p => sbCompactCard(p)).join('')}
   </div>`;
 }
 
-function sbFullBody(p, cid){
-  return `<div class="card-body" style="padding:0">
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Rank</th>${_th('sb_'+cid,'name','Rep')}${_th('sb_'+cid,'pts','Pts','text-align:right')}</tr></thead>
-      <tbody>
-        ${_sortArr(p.data,'sb_'+cid,{name:r=>r.name,pts:r=>r.pts}).map((r,i)=>`<tr onclick="goToRep('${r.id}')" style="cursor:pointer">
-          <td class="${rankClass(i)}">${rankIcon(i)}</td>
-          <td>${esc(r.name)}${teamName(r.team)?` <span class="badge dim" style="font-size:9px">${esc(teamName(r.team))}</span>`:''}</td>
-          <td class="num"><strong>${r.pts.toLocaleString()}</strong></td>
-        </tr>`).join('')}
-        ${!p.data.length?'<tr><td colspan="3" style="text-align:center;color:var(--dim);padding:16px">No reps</td></tr>':''}
-      </tbody>
-    </table></div>
-  </div>`;
-}
-
-function sbCompactBody(p){
+function sbCompactCard(p){
   const top10 = p.data.slice(0,10);
-  const mc = ['var(--gold)','var(--silver)','var(--bronze)'];
-  return `<div>
+  const medalColors = ['var(--gold)','var(--silver)','var(--bronze)'];
+  return `
+  <div class="card" style="margin-bottom:0">
+    <div class="card-header" style="padding:9px 14px">
+      <h3 style="font-size:13px;letter-spacing:.06em">${p.label}</h3>
+      <span class="badge ${p.badge}" style="font-size:9px">${p.sub}</span>
+    </div>
     ${top10.map((r,i)=>`
-      <div onclick="goToRep('${r.id}')" style="display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--elev2)'" onmouseout="this.style.background=''">
-        <span style="font-family:var(--fh);font-size:12px;width:26px;flex-shrink:0;color:${i<3?mc[i]:'var(--dim)'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span>
+      <div onclick="goToRep('${r.id}')" style="display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--elev2)'" onmouseout="this.style.background=''">
+        <span style="font-family:var(--fh);font-size:12px;width:26px;flex-shrink:0;color:${i<3?medalColors[i]:'var(--dim)'}">
+          ${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}
+        </span>
         <span style="flex:1;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.name)}</span>
         <span style="font-size:12px;font-family:var(--fh);font-weight:600;color:var(--accent);flex-shrink:0">${r.pts.toLocaleString()}</span>
       </div>`).join('')}
@@ -1519,33 +1348,31 @@ function renderLog(){
   };
   const base = [...S.events].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
   const sorted = _sort['log'] ? _sortArr(base,'log',acc) : base;
-  const logColBtn = `<button class="btn xs" onclick="openColPicker('log',[['cat','Category'],['type','Type'],['note','Note']],event)" style="font-size:10px;padding:3px 8px">⊞</button>`;
   el.innerHTML = `
   <div class="card">
-    <div class="card-header"><h3>📜 Points Log</h3><span class="badge accent">${sorted.length} events</span>${logColBtn}</div>
+    <div class="card-header"><h3>📜 Points Log</h3><span class="badge accent">${sorted.length} events</span></div>
     <div class="card-body" style="padding:0">
-      <div class="tbl-wrap"><table data-tbl="log" class="${getTableCls('log')}">
+      <div class="tbl-wrap"><table>
         <thead><tr>
-          ${_th('log','date','Date').replace('<th','<th data-col="date"')}
-          ${_th('log','reps','Rep(s)').replace('<th','<th data-col="reps"')}
-          ${_th('log','cat','Category').replace('<th','<th data-col="cat"')}
-          <th data-col="type">Type</th>
-          <th data-col="note">Note</th>
-          ${_th('log','points','Pts','text-align:right').replace('<th','<th data-col="pts"')}
-          <th data-col="del"></th>
+          ${_th('log','date','Date')}
+          ${_th('log','reps','Rep(s)')}
+          ${_th('log','cat','Category')}
+          <th>Type</th><th>Note</th>
+          ${_th('log','points','Pts','text-align:right')}
+          <th></th>
         </tr></thead>
         <tbody>
           ${sorted.map(e => {
             const cat = S.categories.find(c => c.id === e.categoryId);
             const names = e.repIds.map(id => { const r=S.reps.find(r=>r.id===id); return r?r.name:'?'; }).join(', ');
             return `<tr>
-              <td data-col="date">${e.date}</td>
-              <td data-col="reps">${esc(names)}</td>
-              <td data-col="cat">${cat?cat.name:e.categoryId}</td>
-              <td data-col="type">${cat?`<span class="badge ${cat.type==='team'?'accent':'purple'}">${cat.type}</span>`:'—'}</td>
-              <td data-col="note" class="td-note">${esc(e.note||'')}</td>
-              <td data-col="pts" class="num"><strong>${e.points.toLocaleString()}</strong></td>
-              <td data-col="del"><button class="btn xs danger" onclick="deleteEvent('${e.id}')">✕</button></td>
+              <td>${e.date}</td>
+              <td>${names}</td>
+              <td>${cat?cat.name:e.categoryId}</td>
+              <td>${cat?`<span class="badge ${cat.type==='team'?'accent':'purple'}">${cat.type}</span>`:'—'}</td>
+              <td style="color:var(--dim)">${e.note||''}</td>
+              <td class="num"><strong>${e.points.toLocaleString()}</strong></td>
+              <td><button class="btn xs danger" onclick="deleteEvent('${e.id}')">✕</button></td>
             </tr>`;
           }).join('')}
           ${!sorted.length?'<tr><td colspan="7" style="text-align:center;color:var(--dim);padding:32px">No events yet. Use <strong>Award Points</strong> to get started.</td></tr>':''}
@@ -2477,16 +2304,16 @@ function toggleTabVisible(id){
   if(!t.visible && _activeTab === id) switchActiveTab('arena');
 }
 
-function renameCard(id, dn='arena'){
-  const c = lCard(id, dn);
-  const val = prompt(`Rename "${c.label}" to:`, c.label);
-  if(val && val.trim()) { c.label = val.trim(); save(); _reRenderDeck(dn); }
+function renameCard(id){
+  const c = lCard(id);
+  const val = prompt(`Rename card "${c.label}" to:`, c.label);
+  if(val && val.trim()) { c.label = val.trim(); save(); renderArena(); }
 }
 
-function toggleCardVisible(id, dn='arena'){
-  const c = lCard(id, dn);
+function toggleCardVisible(id){
+  const c = lCard(id);
   c.visible = c.visible === false ? true : false;
-  save(); _reRenderDeck(dn);
+  save(); renderArena();
 }
 
 // ── Arena Card Drag-and-Drop ──────────────────────────────────────────────────
@@ -2514,8 +2341,7 @@ function cardDrop(e, targetId){
   e.preventDefault();
   const fromId = _dragCardId || e.dataTransfer.getData('text/plain');
   if(!fromId || fromId === targetId) { cardDragEnd(); return; }
-  const dn = e.currentTarget?.dataset?.deck || 'arena';
-  const cards = _getDeck(dn);
+  const cards = S.layout.arenaCards;
   const fromIdx = cards.findIndex(c=>c.id===fromId);
   const toIdx   = cards.findIndex(c=>c.id===targetId);
   if(fromIdx < 0 || toIdx < 0) { cardDragEnd(); return; }
@@ -2523,7 +2349,7 @@ function cardDrop(e, targetId){
   cards.splice(toIdx, 0, moved);
   _dragCardId = null;
   save();
-  _reRenderDeck(dn);
+  renderArena();
 }
 
 function cardDragEnd(){
