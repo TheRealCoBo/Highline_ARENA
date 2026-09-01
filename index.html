@@ -574,7 +574,7 @@ const DEFAULT_CATS = [
 
 // ── Baked State (legacy — superseded by live-state.json sync) ────────────────
 const BAKED_STATE = null; /*BAKED_STATE_MARKER*/
-const LIVE_WRITE_TOKEN = (s=>s?atob(s).split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^'ARENA26HIGHLINE'.charCodeAt(i%14))).join(''):'')('JjsxJjRQaTgoMxd9eAwVEXIDC2sGAn8eASgGDHIZNigAbXd8AggPChodDyYKAgxEZyA/ETp0DH0KJ3x2KlhZOS4VDwccJHIgKD8YA1ESGBURA316EmAkDTVGcnAk'); /*LIVE_TOKEN_MARKER*/
+const LIVE_WRITE_TOKEN = (s=>s?atob(s).split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^'ARENA26HIGHLINE'.charCodeAt(i%14))).join(''):'')(''); /*LIVE_TOKEN_MARKER*/
 const REPO = 'TheRealCoBo/Highline_ARENA';
 const IS_LIVE = location.protocol === 'https:';
 
@@ -877,6 +877,42 @@ function monthBounds(){
   ];
 }
 
+// ── Month navigation (view past months' final standings) ─────────────────────
+let _monthOffset = 0; // 0 = current month, -1 = last month, etc. View-only.
+
+function monthOffsetBounds(offset){
+  const d = new Date();
+  return [
+    new Date(d.getFullYear(), d.getMonth()+offset, 1).toISOString().slice(0,10),
+    new Date(d.getFullYear(), d.getMonth()+offset+1, 0).toISOString().slice(0,10)
+  ];
+}
+
+function monthNavLimits(){
+  // Earliest viewable month = the month the season started
+  const s = new Date((S.config.startDate || todayStr()) + 'T12:00:00');
+  const now = new Date();
+  const min = (s.getFullYear() - now.getFullYear())*12 + (s.getMonth() - now.getMonth());
+  return [Math.min(min, 0), 0];
+}
+
+function monthLabel(dateStr){
+  return new Date(dateStr + 'T12:00:00').toLocaleString('en-US', {month:'long', year:'numeric'});
+}
+
+function shiftMonth(delta, target){
+  const [min, max] = monthNavLimits();
+  _monthOffset = Math.max(min, Math.min(max, _monthOffset + delta));
+  if(target === 'scoreboard') renderScoreboard(); else renderArena();
+}
+
+function monthNavHTML(target){
+  const [min] = monthNavLimits();
+  const atMin = _monthOffset <= min, atMax = _monthOffset >= 0;
+  const btn = (sym, delta, off) => `<button class="btn xs" ${off?'disabled style="opacity:.3;cursor:default"':''} onclick="event.stopPropagation();shiftMonth(${delta},'${target}')" title="${delta<0?'Previous month':'Next month'}">${sym}</button>`;
+  return `<span style="display:inline-flex;align-items:center;gap:3px;margin-left:6px">${btn('◀',-1,atMin)}${btn('▶',1,atMax)}</span>`;
+}
+
 function rankIcon(i){ return i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1); }
 function rankClass(i){ return i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''; }
 
@@ -976,14 +1012,16 @@ function renderArena(){
 
     if(id==='weekmonth'){
       const cols = span>=3 ? '1fr 1fr' : '1fr';
+      const [vmS,vmE] = monthOffsetBounds(_monthOffset);
+      const viewMonthly = _monthOffset === 0 ? monthly : leaderboard(vmS, vmE);
       return `<div style="display:grid;grid-template-columns:${cols};gap:12px;padding:14px">
         <div>
           <div style="font-family:var(--fh);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">📅 This Week <span class="badge green" style="font-size:9px">${wS} – ${wE}</span></div>
           ${miniLB(weekly)}
         </div>
         <div>
-          <div style="font-family:var(--fh);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">📆 This Month <span class="badge purple" style="font-size:9px">${mS.slice(0,7)}</span></div>
-          ${miniLB(monthly)}
+          <div style="display:flex;align-items:center;font-family:var(--fh);font-size:11px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">📆&nbsp;${_monthOffset===0?'This Month':monthLabel(vmS)} <span class="badge ${_monthOffset===0?'purple':'gold'}" style="font-size:9px;margin-left:6px">${_monthOffset===0?vmS.slice(0,7):'FINAL'}</span>${monthNavHTML('arena')}</div>
+          ${miniLB(viewMonthly)}
         </div>
       </div>`;
     }
@@ -1144,10 +1182,11 @@ let _sbExpanded = false;
 
 function renderScoreboard(){
   const el = document.getElementById('tab-scoreboard');
-  const [wS,wE] = weekBounds(), [mS,mE] = monthBounds(), today = todayStr();
+  const [wS,wE] = weekBounds(), [mS,mE] = monthOffsetBounds(_monthOffset), today = todayStr();
+  const isPastMonth = _monthOffset < 0;
   const periods = [
     {label:'Season', sub:S.config.quarter,  badge:'accent', data:leaderboard(S.config.startDate,S.config.endDate)},
-    {label:'Month',  sub:mS.slice(0,7),     badge:'purple', data:leaderboard(mS,mE)},
+    {label:'Month',  sub:monthLabel(mS)+(isPastMonth?' · FINAL':''), badge:isPastMonth?'gold':'purple', data:leaderboard(mS,mE), nav:'scoreboard'},
     {label:'Week',   sub:wS+' – '+wE,       badge:'green',  data:leaderboard(wS,wE)},
     {label:'Today',  sub:today,             badge:'gold',   data:leaderboard(today,today)},
   ];
@@ -1160,7 +1199,7 @@ function renderScoreboard(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="two-col">
       ${periods.map(p=>`
         <div class="card">
-          <div class="card-header"><h3>${p.label} Standings</h3><span class="badge ${p.badge}">${p.sub}</span></div>
+          <div class="card-header"><h3>${p.label} Standings</h3><span style="display:inline-flex;align-items:center"><span class="badge ${p.badge}">${p.sub}</span>${p.nav?monthNavHTML(p.nav):''}</span></div>
           <div class="card-body" style="padding:0">
             <div class="tbl-wrap"><table>
               <thead><tr><th>Rank</th>${_th('sb_'+p.label,'name','Rep')}${_th('sb_'+p.label,'pts','Pts','text-align:right')}</tr></thead>
@@ -1196,7 +1235,7 @@ function sbCompactCard(p){
   <div class="card" style="margin-bottom:0">
     <div class="card-header" style="padding:9px 14px">
       <h3 style="font-size:13px;letter-spacing:.06em">${p.label}</h3>
-      <span class="badge ${p.badge}" style="font-size:9px">${p.sub}</span>
+      <span style="display:inline-flex;align-items:center"><span class="badge ${p.badge}" style="font-size:9px">${p.sub}</span>${p.nav?monthNavHTML(p.nav):''}</span>
     </div>
     ${top10.map((r,i)=>`
       <div onclick="goToRep('${r.id}')" style="display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--elev2)'" onmouseout="this.style.background=''">
